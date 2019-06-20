@@ -448,29 +448,6 @@ class BaseDataNode(BaseNode):
         r = self._api.core.delete(self)
         self.id = None
 
-  #  def set_ready(self, **kwargs):
-  #      """
-  #      Set's the package's state to ``READY``
-  #      """
-  #      self.state = "READY"
-  #      return self.update(**kwargs)
-
-  #  def set_unavailable(self):
-  #      """
-  #      Set's the package's state to ``UNAVAILABLE``
-  #      """
-  #      self._check_exists()
-  #      self.state = "UNAVAILABLE"
-  #      return self.update()
-
-  #  def set_error(self):
-  #      """
-  #      Set's the package's state to ``ERROR``
-  #      """
-  #      self._check_exists()
-  #      self.state = "ERROR"
-  #      return self.update()
-
     def as_dict(self):
         d = {
             "name": self.name,
