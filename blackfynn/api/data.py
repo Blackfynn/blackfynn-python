@@ -199,7 +199,10 @@ class PackagesAPI(APIBase):
         """
         Update package on platform
         """
-        resp = self._put(self._uri('/{id}', id=pkg.id), json=kwargs)
+        d = pkg.as_dict()
+        d.update(kwargs)
+        d.pop("state",None)
+        resp = self._put(self._uri('/{id}', id=pkg.id), json=d)
         pkg = self._get_package_from_data(resp)
         return pkg
 
