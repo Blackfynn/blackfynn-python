@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at https://developer.blackfynn.io/python/
 
+## [2.13.0]
+### Removed
+- State of packages can no longer be set through this library 
+
 ## [2.12.0]
 ### Removed
 - Separate host for Models API
