@@ -31,4 +31,4 @@ from .models import (
 )
 
 __title__ = 'blackfynn'
-__version__ = '2.12.0'
+__version__ = '2.13.1'
