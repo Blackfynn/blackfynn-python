@@ -60,7 +60,7 @@ The ``BaseDataNode`` class provides the basic methods available on **all models*
 .. autoclass:: BaseDataNode
    :members:
    :inherited-members:
-   :exclude-members: add_properties, insert_property
+   :exclude-members: add_properties, insert_property, set_ready, set_error, set_unavailable
 
 
 Data Catalog Basics
