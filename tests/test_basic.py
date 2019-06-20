@@ -98,30 +98,6 @@ def test_packages_create_delete(client, dataset):
     # TODO: (once we auto-remove from parent)
     #assert pkg not in dataset
 
-def test_package_states(client, dataset):
-    pkg = DataPackage('My Stateful Package', package_type='Slide')
-    assert not pkg.exists
-    dataset.add(pkg)
-    assert pkg.exists
-    assert pkg.owner_id == client.profile.int_id
-    assert pkg.state == "UNAVAILABLE"
-    pkg.set_ready()
-    pkg2 = client.get(pkg.id)
-    assert pkg2.id == pkg.id
-    assert pkg2.state == pkg.state
-    assert pkg2.state == "READY"
-    pkg.set_error()
-    del pkg2
-
-    pkg2 = client.get(pkg.id)
-    assert pkg2.id == pkg.id
-    assert pkg2.state == pkg.state
-    assert pkg2.state == "ERROR"
-    del pkg2
-
-    pkg.delete()
-
-
 def test_properties(client, dataset):
 
     pkg = DataPackage('Some Video', package_type='Video')
