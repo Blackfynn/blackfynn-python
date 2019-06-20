@@ -60,7 +60,7 @@ The ``BaseDataNode`` class provides the basic methods available on **all models*
 .. autoclass:: BaseDataNode
    :members:
    :inherited-members:
-   :exclude-members: add_properties, insert_property, set_ready, set_error, set_unavailable
+   :exclude-members: add_properties, insert_property
 
 
 Data Catalog Basics
@@ -79,7 +79,7 @@ Datasets are core entities on the Blackfynn platform. All data must be placed in
 .. autoclass:: Dataset
    :members:
    :inherited-members:
-   :exclude-members: set_ready, set_error, set_unavailable, add_collaborators, add_properties, insert_property
+   :exclude-members: add_collaborators, add_properties, insert_property
 
 Collection
 ^^^^^^^^^^^^
@@ -88,7 +88,7 @@ Collections are collections of data that exist inside of a Dataset. These can be
 .. autoclass:: Collection
    :members:
    :inherited-members:
-   :exclude-members: set_ready, set_error, set_unavailable, add_properties, insert_property
+   :exclude-members: add_properties, insert_property
 
 Data Package
 ^^^^^^^^^^^^^
@@ -96,7 +96,7 @@ The ``DataPackage`` class is used for all non-specific data classes (i.e. classe
 
 .. autoclass:: DataPackage
    :members:
-   :exclude-members: set_ready, set_error, set_unavailable
+   :exclude-members:
 
 
 Data-Specific Classes
