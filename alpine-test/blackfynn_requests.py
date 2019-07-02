@@ -10,10 +10,8 @@ burp0_url = "https://api.blackfynn.net:443/account/api/session"
 burp0_headers = {"Connection": "close", "Accept-Encoding": "gzip, deflate", "Accept": "*/*",
                  "User-Agent": "python-requests/2.21.0", "Authorization": "Bearer None",
                  "Content-Type": "application/json"}
-burp0_json = {"secret": "512bc9e6-7d0d-4f6b-864b-7fa36e2706f3", "tokenId": "67edea75-b019-4623-a36c-e053a1eec8d9"}
 resp = session.post(burp0_url, headers=burp0_headers, json=burp0_json)
 
-# '{"session_token":"f516efea-d95e-4e66-b249-fc2bae5bda31","organization":"N:organization:7aae2bf7-ff15-4071-aa2a-e876ae609d3c","expires_in":7200}'
 resp_json = json.loads(resp.content)
 X_SESSION_ID = resp_json['session_token']
 AUTHORIZATION_BEARER = "Bearer " + resp_json['session_token']
@@ -355,7 +353,6 @@ session.post(burp56_url, headers=burp56_headers, cookies=burp56_cookies, json=bu
 
 #burp57_url = "https://api.blackfynn.net:443/account/api/session"
 #burp57_headers = {"Connection": "close", "Accept-Encoding": "gzip, deflate", "Accept": "*/*", "User-Agent": "python-requests/2.21.0", "Authorization": #AUTHORIZATION_BEARER, "Content-Type": "application/json"}
-#burp57_json={"secret": "512bc9e6-7d0d-4f6b-864b-7fa36e2706f3", "tokenId": "67edea75-b019-4623-a36c-e053a1eec8d9"}
 #session.post(burp57_url, headers=burp57_headers, json=burp57_json)
 
 burp58_url = "https://api.blackfynn.net:443/user/"
@@ -369,7 +366,6 @@ session.get(burp59_url, headers=burp59_headers, cookies=burp59_cookies)
 
 #burp60_url = "https://api.blackfynn.net:443/account/api/session"
 #burp60_headers = {"Connection": "close", "Accept-Encoding": "gzip, deflate", "Accept": "*/*", "User-Agent": "python-requests/2.21.0", "Authorization": #AUTHORIZATION_BEARER, "Content-Type": "application/json"}
-#burp60_json={"secret": "512bc9e6-7d0d-4f6b-864b-7fa36e2706f3", "tokenId": "67edea75-b019-4623-a36c-e053a1eec8d9"}
 #session.post(burp60_url, headers=burp60_headers, json=burp60_json)
 
 burp61_url = "https://api.blackfynn.net:443/user/"
