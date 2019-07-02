@@ -160,6 +160,70 @@ class OrganizationsAPI(APIBase):
         resp = self._get(self._uri('/{id}/members', id=id))
         return [User.from_dict(r, api=self.session) for r in resp]
 
+    # Begin: Added by Doc Sewell, Alpine Security
+    # Organization
+    def get_custom_terms_of_service(self, org):
+        id = self._get_id(org)
+        resp = self._get(self._uri('/{id}/custom-terms-of-service', id=id))
+        return resp
+
+    # Doesn't work.  Missing "Organization.as_dict()" function to allow
+    # PUT to send along the updated Organization
+    def update(self, org):
+        id = self._get_id(org)
+        resp = self._put(self._uri('/{id}', id=id), json=org.as_dict())
+        return Organization.from_dict(resp, api.self.session)
+
+    def get_team(self, org, team_id):
+        id = self._get_id(org)
+        return self._get(self._uri('/{id}/teams/{team_id}', id=id, team_id=team_id))
+
+    def create_team(self, org, team_name):
+        id = self._get_id(org)
+        json = {
+            "name": team_name
+        }
+
+        resp = self._post(self._uri('/{id}/teams', id=id), json=json)
+        # No Team object yet.  Return the JSON
+        return resp
+
+    def update_team(self, org, team_id, team_name):
+        id = self._get_id(org)
+        json = {
+            "name": team_name
+        }
+
+        resp = self._put(self._uri('/{id}/teams/{team_id}', id=id, team_id=team_id), json=json)
+        # No Team object yet.  Return the JSON
+        return resp
+
+    def delete_team(self, org, team_id):
+        org_id = self._get_id(org)
+
+        resp = self._del(self._uri('/{org_id}/teams/{team_id}', org_id=org_id, team_id=team_id))
+        return resp
+
+    def get_team_members(self, org, team_id):
+        id = self._get_id(org)
+        resp = self._get(self._uri('/{id}/teams/{team_id}/members', id=id, team_id=team_id))
+        return [User.from_dict(r, api=self.session) for r in resp]
+
+    # Invites
+    def get_invites(self, org):
+        id = self._get_id(org)
+        return self._get(self._uri('/{id}/invites', id=id))
+
+    def refresh_invite(self, org, invite_id):
+        id = self._get_id(org)
+        return self._put(self._uri('/{id}/invites/{invite_id}', id=id, invite_id=invite_id))
+
+    def delete_invite(self, org, invite_id):
+        id = self._get_id(org)
+        return self._del(self._uri('/{id}/invites/{invite_id}', id=id, invite_id=invite_id))
+
+    # End: Added by Doc Sewell, Alpine Security
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Security
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -180,6 +244,17 @@ class SecurityAPI(APIBase):
                     '/user/credentials/upload/{dataset_id}',
                     dataset_id=dataset_id))
 
+    # Begin: Added by Doc Sewell, Alpine Security
+    def get_streaming_credentials(self):
+        """
+        Get streaming credentials
+        """
+        return self._get(
+                self._uri(
+                    '/user/credentials/streaming'))
+
+
+    # End: Added by Doc Sewell, Alpine Security
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Search

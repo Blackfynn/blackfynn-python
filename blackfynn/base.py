@@ -135,6 +135,12 @@ class ClientSession(object):
         """
         if self._session is None:
             self._session = Session()
+
+            # Added by Doc Sewell, Alpine Security to allow Burp Suite to capture requests...
+            self._session.verify = False
+            self._session.proxies = {"http", "127.0.0.1:8080", "https", "127.0.0.1:8080"}
+            # End Added by Doc Sewell
+
             self._set_auth(self.token)
 
             # Enable retries via urllib

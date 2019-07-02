@@ -130,6 +130,57 @@ class DatasetsAPI(APIBase):
         resp = self._del(uri, json=collaborator_ids)
         return resp
 
+    # Begin: Added by Doc Sewell, Alpine Security
+
+    def lock(self, ds):
+        """
+        Lock a dataset on the platform
+        """
+        id = self._get_id(ds)
+        resp = self._put( self._uri('/{id}/lock', id=id), json=ds.as_dict())
+        return resp
+
+    def unlock(self, ds):
+        """
+        Lock a dataset on the platform
+        """
+        id = self._get_id(ds)
+        resp = self._put( self._uri('/{id}/unlock', id=id), json=ds.as_dict())
+        return resp
+
+    def is_locked(self, ds):
+        """
+        Lock a dataset on the platform
+        """
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}/lock', id=id), json=ds.as_dict())
+        return "locked" in resp and resp["locked"] == True
+
+    def get_readme(self, ds):
+        """
+        Update a readme for a dataset on the platform
+        """
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}/readme', id=id), json=ds.as_dict())
+        return resp["readme"] if "readme" in resp else None
+
+    def update_readme(self, ds, readme):
+        """
+        Update a dataset on the platform
+        """
+        json = {"readme": readme}
+        id = self._get_id(ds)
+        resp = self._put( self._uri('/{id}/readme', id=id), json=json)
+        return resp
+
+    def get_all_packages(self, ds):
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}/packages', id=id))
+        return resp
+
+
+    # End: Added by Doc Sewell, Alpine Security
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Data
@@ -263,6 +314,13 @@ class PackagesAPI(APIBase):
         source files (e.g. converted to a different format), but they could also
         be the source files themselves.
         """
+        # Doc Sewell, Alpine Security
+        # The API documentation seems to indicate that the API is
+        # expecting the node_id of the package (e.g.
+        # N:package:ca612511-3472-44c0-a224-d9c5c4f4f621), rather than
+        # the pkg.id (e.g. "1")
+        # Therefore, this function is not working properly, but the
+        # API call is.
         pkg_id = self._get_id(pkg)
         resp = self._get(self._uri('/{id}/files', id=pkg_id))
         for r in resp:
