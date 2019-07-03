@@ -2116,9 +2116,9 @@ class Dataset(BaseCollection):
         Defines a ``RelationshipType`` on the platform.
 
         Args:
-            name (str):              name of the relationship
-            description (str):       description of the relationship
-            schema (dict, optional): definitation of the relationship's schema
+            name (str):                  name of the relationship
+            description (str):           description of the relationship
+            schema (dict, optional):     definitation of the relationship's schema
 
         Returns:
             The newly created ``RelationshipType``
@@ -2161,6 +2161,22 @@ class Dataset(BaseCollection):
             automaticallyProcessPackages = self.automatically_process_packages,
             properties = [p.as_dict() for p in self.properties]
         )
+
+    def get_linked_properties(self):
+        """
+        Returns a list of all linked model properties in the dataset.
+        """
+        return self._api.concepts.get_dataset_linked_properties(self.id)
+
+    def get_linked_property(self, prop):
+        """
+        Get a LinkedModelProperty by name or id.
+        """
+        all_props = self.get_linked_properties()
+        for p in all_props:
+            if prop == p.name or prop == p.id:
+                return p
+        raise Exception("No linked property found with name or id '{}'".format(prop))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Collections
@@ -2477,6 +2493,55 @@ class BaseModelProperty(object):
     def __repr__(self):
         return u"<BaseModelProperty name='{}' {}>".format(self.name, self.type)
 
+class LinkedModelProperty(BaseNode):
+    def __init__(self, name, model, display_name=None, id=None, position=None):
+        assert " " not in name, "name cannot contain spaces, alternative names include {} and {}".format(name.replace(" ", "_"), name.replace(" ", "-"))
+        self._object_key = ''
+        self.name = name
+        self.id = id
+        self.position = position
+
+        if display_name is None:
+            self.display_name = name
+        else:
+            self.display_name = display_name
+
+        if isinstance(model, Model):
+            self.model = model.id
+        elif isinstance(model, str):
+            self.model = model
+        else:
+            raise Exception("'model' must be an id or a Model object")
+
+    def as_dict(self):
+        dct = {
+            "name": self.name,
+            "displayName": self.display_name,
+            "to": self.model
+        }
+        if self.position is not None: dct['position'] = self.position
+        return dct
+
+    @classmethod
+    def from_dict(cls, data):
+        if "link" in data:
+            # data came from a GET request
+            link = data["link"]
+        else:
+            # data came from a POST or PUT
+            link = data
+        name = link["name"]
+        display_name = link.get("displayName", link.get("display_name", name))
+        model = link["to"]
+        id = link.get("id")
+        position = link.get("position")
+        return cls(name=name, model=model, display_name=display_name, id=id, position=position)
+
+    @as_native_str()
+    def __repr__(self):
+        return "<LinkedModelProperty name='{}' id='{}'>".format(
+            self.name, self.id)
+
 class BaseModelValue(object):
     def __init__(self, name, value, *args, **kwargs):
         assert " " not in name, "name cannot contain spaces, alternative names include {} and {}".format(name.replace(" ", "_"), name.replace(" ", "-"))
@@ -2511,6 +2576,28 @@ class BaseModelValue(object):
     def __repr__(self):
         return u"<BaseModelValue name='{}' value='{}' {}>".format(self.name, self.value, self.type)
 
+class LinkedModelValue(BaseNode):
+    def __init__(self, target_id, link_type_id, name="", display_name="", id=None):
+        self.name = name
+        self.display_name = display_name
+        self.target = target_id
+        self.link = link_type_id
+        self.id = id
+
+    @classmethod
+    def from_dict(cls, data, name="", display_name=""):
+        return cls(target_id=data["to"], link_type_id=data["schemaLinkedPropertyId"], name=name, display_name=display_name, id=data["id"])
+
+    def as_dict(self):
+        return dict(
+            name=self.name,
+            displayName=self.display_name,
+            schemaLinkedPropertyId=self.link, 
+            to=target_record.id) 
+
+    @as_native_str()
+    def __repr__(self):
+        return "<LinkedModelValue type={} name='{}' id={}>".format(self.link, self.name, self.id)
 
 class BaseModelNode(BaseNode):
     _object_key = ''
@@ -2527,6 +2614,7 @@ class BaseModelNode(BaseNode):
         self.created_at   = kwargs.pop('createdAt', None)
         self.updated_at   = kwargs.pop('updatedAt', None)
         schema            = kwargs.pop('schema', None)
+        self.linked       = kwargs.pop('linked', {})
 
         super(BaseModelNode, self).__init__(*args, **kwargs)
 
@@ -2636,6 +2724,32 @@ class BaseModelNode(BaseNode):
         self._add_properties(properties)
         self.update()
 
+    def add_linked_property(self, name, target_model, display_name=None):
+        """
+        Add a linked property to the model.
+        
+        Args:
+          name (str): Name of the property
+          target_model (Model): Model that the property will link to
+          display_name (str, optional): Display name of the property
+        """
+        payload = LinkedModelProperty(name, display_name=display_name, model=target_model.id)
+        prop = self._api.concepts.create_linked_property(self.dataset_id, self, payload)
+        self.linked[prop.name] = prop
+        return prop
+
+    def add_linked_properties(self, properties):
+        """
+        Add multiple linked properties to the model.
+
+        Args:
+          properties (list): List of LinkedModelProperty objects
+        """
+        props = self._api.concepts.create_linked_properties(self.dataset_id, self, properties)
+        for prop in props:
+            self.linked[prop.name] = prop
+        return props
+
     def remove_property(self, property):
         """
         Remove property from model schema.
@@ -2672,6 +2786,27 @@ class BaseModelNode(BaseNode):
         self._api.concepts.delete_property(self.dataset_id, self, prop_id)
         self.schema.pop(prop_name)
 
+    def remove_linked_property(self, prop):
+        """
+        Delete the linked property with the given name or id.
+        """
+        # verify linked property is in schema
+        if isinstance(prop, string_types):
+            # assume property name or ID
+            try:
+                prop_name, prop_id = next((p.name, p.id) for p in \
+                    self.linked.values() if (prop == p.id or prop == p.name))
+            except StopIteration:
+                raise Exception("Property '{}' not found in model's schema.".format(property))
+        elif isinstance(prop, ModelProperty):
+            prop_name = prop.name
+            prop_id = prop.id
+        else:
+            raise Exception("Expected a LinkedModelProperty, found type {}".format(type(property)))
+
+        self._api.concepts.delete_linked_property(self.dataset_id, self, prop_id)
+        self.linked.pop(prop_name)
+
     def get_property(self, name):
         """
         Gets the property object by name.
@@ -2681,6 +2816,22 @@ class BaseModelNode(BaseNode):
             float
         """
         return self.schema.get(name, None)
+
+    def get_linked_properties(self):
+        """
+        Get all linked properties attached to this Model.
+        """
+        all_props = self._api.concepts.get_linked_properties(self.dataset_id, self)
+        return {p.name: p for p in all_props}
+
+    def get_linked_property(self, name):
+        """
+        Get a linked property by name or id.
+        """
+        for k,v in self.get_linked_properties().items():
+            if k == name or v.id == name:
+                return v
+        raise Exception("No linked property found with name or id '{}'".format(name))
 
     def as_dict(self):
         return dict(
@@ -3283,6 +3434,49 @@ class Record(BaseRecord):
         # use batch endpoint to create relationships
         return self._api.concepts.relationships.instances.create_many(self.dataset_id, relationship_type, *relationships)
 
+    def get_links(self):
+        """
+        Get all link values attached to this Record.
+        """
+        return self._api.concepts.instances.get_links(self.dataset_id, self.model, self)
+
+    def get_link(self, link):
+        """
+        Get a link value by name or id.
+        """
+        all_links = self.get_links()
+        for l in all_links:
+            if link == l.name or link == l.id:
+                return l
+        raise Exception("No link found with a name or ID matching '{}'".format(link))
+
+    def link_to(self, target, link):
+        """
+        Attach a linked property value to the Record.
+        target: the id or Record object of the target record
+        link: the id or LinkedModelProperty object to use
+        """
+        model = self.model
+        
+        if isinstance(target, Record):
+            target = target.id
+
+        if isinstance(link, LinkedModelProperty):
+            link_id = link.id
+        elif isinstance(link, str):
+            link_id = model.get_linked_property(link_name).id
+        
+        payload = dict(name=model.type, displayName=model.display_name,
+            schemaLinkedPropertyId=link_id, to=target)
+        return self._api.concepts.instances.create_link(self.dataset_id, self.model, self, payload)
+
+    def unlink(self, link_name):
+        """
+        Delete a link by name or id.
+        """
+        link = self.get_link(link_name)
+        self._api.concepts.instances.remove_link(self.dataset_id, self.model, self, link)
+
     @property
     def model(self):
         """
@@ -3590,9 +3784,9 @@ class RelationshipType(BaseModelNode):
     def as_dict(self):
         d = super(RelationshipType, self).as_dict()
         d['type'] = 'relationship'
-        if self.source != None:
+        if self.source is not None:
             d['from'] = self.source
-        if self.destination != None:
+        if self.destination is not None:
             d['to'] = self.destination
         return d
 

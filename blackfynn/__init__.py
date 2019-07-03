@@ -11,6 +11,7 @@ from .models import (
     File,
     DataPackage,
     Collection,
+    LinkedModelProperty,
     Model,
     ModelFilter,
     ModelJoin,
