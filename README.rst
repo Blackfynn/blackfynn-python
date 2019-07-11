@@ -23,6 +23,16 @@ See the `installation notes`_ for more details.
 
 .. _installation notes: https://github.com/Blackfynn/blackfynn-python/blob/master/INSTALL.rst
 
+Release
+-------
+
+To release, you should:
+
+- Change CHANGELOG.md with the proper changes for the release
+- Modify the version in __init.py__
+- Merge the branch into master
+- Create a new Github Release
+
 Documentation
 -------------
 

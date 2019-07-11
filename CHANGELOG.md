@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at https://developer.blackfynn.io/python/
 
+
+## [2.13.1]
+### Fixed
+- Incorrect version
+
+## Added
+- Documentation about release
+
+## [2.13.0]
+### Removed
+- State of packages can no longer be set through this library 
+
+## [2.12.0]
+### Removed
+- Separate host for Models API
+
 ## [2.11.1]
 ### Changed
 - Using relate_to on concepts now populates the source and destination of the relationship

@@ -54,7 +54,6 @@ class ClientSession(object):
     def __init__(self, settings):
         self._host = settings.api_host
         self._streaming_host = settings.streaming_api_host
-        self._concepts_host = settings.concepts_api_host
         self._api_token = settings.api_token
         self._api_secret = settings.api_secret
         self._jwt = settings.jwt

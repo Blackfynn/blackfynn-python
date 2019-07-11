@@ -68,7 +68,6 @@ To verify that your profile was set up correctly, run ``bf status``:
      Organization  : <your organization>
      API Location  : https://api.blackfynn.io
      Streaming API : https://streaming.blackfynn.io
-     Models API    : https://concepts.blackfynn.io
 
 Using this technique you can add multiple connection profiles belonging to different organizations.
 

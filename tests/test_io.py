@@ -11,13 +11,16 @@ from blackfynn.api.agent import AgentError
 def _resource_path(fname):
     return resource_filename('tests.resources', fname)
 
-FILE1 = _resource_path('test-upload.txt')
-FILE2 = _resource_path('test-upload-2.txt')
-FILE3 = _resource_path('test-tiny.png')
-FILE_EMPTY = _resource_path('empty.txt')
-FLAT_DIR = _resource_path('flat_dir')
+# All test assets need to use this "test-78f3ea50" prefix so failures caused by
+# deleting datasets before processing all assests can be filtered out of
+# production error notifications.
+FILE1      = _resource_path('test-78f3ea50.txt')
+FILE2      = _resource_path('test-78f3ea50.csv')
+FILE3      = _resource_path('test-78f3ea50.png')
+FILE_EMPTY = _resource_path('test-78f3ea50.empty')
+FLAT_DIR   = _resource_path('flat_dir')
 NESTED_DIR = _resource_path('nested_dir')
-INNER_DIR = 'inner_dir'
+INNER_DIR  = 'inner_dir'
 
 
 @pytest.mark.agent

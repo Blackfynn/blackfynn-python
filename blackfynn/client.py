@@ -45,7 +45,6 @@ class Blackfynn(object):
         api_secret (str, optional): Preferred api secret to use
         host (str, optional): Preferred host to use
         streaming_host (str, optional): Preferred streaming host to use
-        concepts_host (str, optional): Preferred concepts service host to use
         env_override (bool, optional): Should environment variables override settings
         **overrides (dict, optional): Settings to override
 
@@ -86,7 +85,7 @@ class Blackfynn(object):
         are properly set.
 
     """
-    def __init__(self, profile=None, api_token=None, api_secret=None, jwt=None, host=None, streaming_host=None, concepts_host=None, env_override=True, **overrides):
+    def __init__(self, profile=None, api_token=None, api_secret=None, jwt=None, host=None, streaming_host=None, env_override=True, **overrides):
 
         self._logger = log.get_logger("blackfynn.client.Blackfynn")
 
@@ -96,7 +95,6 @@ class Blackfynn(object):
             'api_host': host,
             'jwt': jwt,
             'streaming_api_host': streaming_host,
-            'concepts_api_host': concepts_host,
             }.items() if v != None })
         self.settings = Settings(profile, overrides, env_override)
 
