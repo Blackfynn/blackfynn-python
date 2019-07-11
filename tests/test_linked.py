@@ -1,4 +1,5 @@
 import pytest
+from uuid import uuid4
 
 from blackfynn.models import (
     DataPackage,
@@ -11,11 +12,11 @@ from blackfynn.models import (
     convert_type_to_datatype,
     uncast_value
 )
-from tests.utils import create_test_dataset, current_ts
+from tests.utils import create_test_dataset
 
 ### Create a fresh dataset for each test:
 @pytest.fixture(scope='function')
-def dataset(client):
+def empty_dataset(client):
     """
     Test Dataset to be used by other tests.
     """
@@ -29,9 +30,9 @@ def dataset(client):
 
 
 ### Testing linked properties locally:
-def test_make_linked_property(dataset):
+def test_make_linked_property(empty_dataset):
     # make a new model
-    model = dataset.create_model('my_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
+    model = empty_dataset.create_model('my_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
 
     # create a linked property linking to that model,
     # and make sure the link initialized correctly
@@ -60,37 +61,40 @@ def test_make_linked_property(dataset):
 
 
 ### Testing linked property API methods:
-def test_add_linked_property(dataset):
-    dataset.models()
+def test_add_linked_property(empty_dataset):
     # Create two models and link one to the other
-    source = dataset.create_model('source_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
-    target = dataset.create_model('target_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
+    source = empty_dataset.create_model('source_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
+    target = empty_dataset.create_model('target_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
     source.add_linked_property('link', target, 'my linked property')
 
     # Make sure newly created link is accessible through the API
-    assert any(prop.name == 'link' for prop in dataset.get_linked_properties())
-    assert dataset.get_topology()['linked_properties'][0].name == 'link'
+    # assert any(prop.name == 'link' for prop in empty_dataset.get_linked_properties())
+    assert empty_dataset.get_topology()['linked_properties'][0].name == 'link'
     assert 'link' in source.linked
+
+    # Prevent user from adding duplicate linked properties
+    with pytest.raises(Exception):
+        source.add_linked_property('link', source, 'duplicate linked property')
+    assert len(empty_dataset.get_topology()['linked_properties']) == 1
     
-def test_add_linked_property_bulk(dataset):
+def test_add_linked_property_bulk(empty_dataset):
     # Link one model to three others
-    source = dataset.create_model('source_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
-    target1 = dataset.create_model('target_model1_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
-    target2 = dataset.create_model('target_model2_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
-    target3 = dataset.create_model('target_model3_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
-    source.add_linked_property('link1', target1, '1st linked property')
-    source.add_linked_property('link2', target2, '2nd linked property')
-    source.add_linked_property('link3', target3, '3rd linked property')
+    source = empty_dataset.create_model('source_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
+    target = empty_dataset.create_model('target_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
+    link1 = LinkedModelProperty('link1', target)
+    link2 = LinkedModelProperty('link2', target)
+    link3 = LinkedModelProperty('link3', target)
+    source.add_linked_properties([link1, link2, link3])
 
     # Make sure newly created link is accessible through the API
-    assert len(dataset.get_linked_properties()) == 3
-    assert len(dataset.get_topology()['linked_properties']) == 3
+    # assert len(empty_dataset.get_linked_properties()) == 3
+    assert len(empty_dataset.get_topology()['linked_properties']) == 3
     assert len(source.linked) == 3
 
-def test_edit_linked_property(dataset):
+def test_edit_linked_property(empty_dataset):
     # make a model and add a linked property
-    source = dataset.create_model('source_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
-    target = dataset.create_model('target_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
+    source = empty_dataset.create_model('source_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
+    target = empty_dataset.create_model('target_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
     link = source.add_linked_property('link', target, 'my linked property')
 
     # edit the linked property and update model
@@ -99,15 +103,14 @@ def test_edit_linked_property(dataset):
     source.update()
     
     # Make sure changes were saved
-    #new_link = next(p for p in dataset.get_linked_properties() if p.name == 'link')
     new_link = source.get_linked_property('link')
     assert new_link.position == 99
     assert new_link.display_name == 'updated linked property'
 
-def test_delete_linked_property(dataset):
+def test_delete_linked_property(empty_dataset):
     # make a model and add a linked property
-    source = dataset.create_model('source_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
-    target = dataset.create_model('target_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
+    source = empty_dataset.create_model('source_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
+    target = empty_dataset.create_model('target_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
     source.add_linked_property('link', target, 'my linked property')
 
     # delete the link
@@ -115,46 +118,62 @@ def test_delete_linked_property(dataset):
 
     # Make sure changes were saved
     assert 'link' not in source.linked
-    assert len(dataset.get_linked_properties()) == 0
+    # assert len(empty_dataset.get_linked_properties()) == 0
+
+def test_retrieve_linked_properties(empty_dataset):
+    # make a model and add a linked property
+    source = empty_dataset.create_model('source_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
+    target = empty_dataset.create_model('target_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
+    source.add_linked_property('link', target, 'my linked property')
+
+    new_source = empty_dataset.get_model(source.type)
+    assert 'link' in new_source.linked
 
 
 ### Testing linked property values
-def test_add_link(dataset):
+def test_add_link(empty_dataset):
     # make a model and add a linked property
-    source = dataset.create_model('source_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
-    target = dataset.create_model('target_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
+    source = empty_dataset.create_model('source_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
+    target = empty_dataset.create_model('target_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
     prop = source.add_linked_property('link', target, 'my linked property')
 
     # make records and link them
     source_rec = source.create_record({'name': 'source_record'})
     target_rec = target.create_record({'name': 'target_record'})
     link = source_rec.link_to(target_rec, prop)
-    assert any(link.target == target_rec.id for link in source_rec.get_links())
+    assert any(link.target == target_rec.id for link in source_rec.get_linked_values())
 
-def test_get_link(dataset):
+    # prevent duplicate links from being created
+    target_rec2 = target.create_record({'name': 'second_target'})
+    link2 = source_rec.link_to(target_rec2, prop)
+    links = source_rec.get_linked_values()
+    assert len(links) == 1
+    assert links[0].target == target_rec2.id
+
+def test_get_link(empty_dataset):
     # make a model and add a linked property
-    source = dataset.create_model('source_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
-    target = dataset.create_model('target_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
+    source = empty_dataset.create_model('source_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
+    target = empty_dataset.create_model('target_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
     prop = source.add_linked_property('link', target, 'my linked property')
 
     # make records and link them
     source_rec = source.create_record({'name': 'source_record'})
     target_rec = target.create_record({'name': 'target_record'})
     link = source_rec.link_to(target_rec, prop)
-    assert link.id == source_rec.get_link(link.id).id
+    assert link.id == source_rec.get_linked_value(link.id).id
 
-def test_remove_link(dataset):
+def test_remove_link(empty_dataset):
     # make a model and add a linked property
-    source = dataset.create_model('source_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
-    target = dataset.create_model('target_model_{}'.format(current_ts()), schema=[ModelProperty('name', title=True)])
+    source = empty_dataset.create_model('source_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
+    target = empty_dataset.create_model('target_model_{}'.format(uuid4()), schema=[ModelProperty('name', title=True)])
     prop = source.add_linked_property('link', target, 'my linked property')
 
     # make records and link them
     source_rec = source.create_record({'name': 'source_record'})
     target_rec = target.create_record({'name': 'target_record'})
     link = source_rec.link_to(target_rec, prop)
-    assert link.id == source_rec.get_link(link.id).id
+    assert link.id == source_rec.get_linked_value(link.id).id
 
     # delete the link
     source_rec.unlink(link.id)
-    assert not any(link.target == target_rec.id for link in source_rec.get_links())
+    assert not any(link.target == target_rec.id for link in source_rec.get_linked_values())

@@ -2162,22 +2162,6 @@ class Dataset(BaseCollection):
             properties = [p.as_dict() for p in self.properties]
         )
 
-    def get_linked_properties(self):
-        """
-        Returns a list of all linked model properties in the dataset.
-        """
-        return self._api.concepts.get_dataset_linked_properties(self.id)
-
-    def get_linked_property(self, prop):
-        """
-        Get a LinkedModelProperty by name or id.
-        """
-        all_props = self.get_linked_properties()
-        for p in all_props:
-            if prop == p.name or prop == p.id:
-                return p
-        raise Exception("No linked property found with name or id '{}'".format(prop))
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Collections
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2494,7 +2478,7 @@ class BaseModelProperty(object):
         return u"<BaseModelProperty name='{}' {}>".format(self.name, self.type)
 
 class LinkedModelProperty(BaseNode):
-    def __init__(self, name, model, display_name=None, id=None, position=None):
+    def __init__(self, name, target, display_name=None, id=None, position=None):
         assert " " not in name, "name cannot contain spaces, alternative names include {} and {}".format(name.replace(" ", "_"), name.replace(" ", "-"))
         self._object_key = ''
         self.name = name
@@ -2506,20 +2490,21 @@ class LinkedModelProperty(BaseNode):
         else:
             self.display_name = display_name
 
-        if isinstance(model, Model):
-            self.model = model.id
-        elif isinstance(model, str):
-            self.model = model
+        if isinstance(target, Model):
+            self.target = target.id
+        elif isinstance(target, str):
+            self.target = target
         else:
-            raise Exception("'model' must be an id or a Model object")
+            raise Exception("'target' must be an id or a Model object")
 
     def as_dict(self):
         dct = {
             "name": self.name,
             "displayName": self.display_name,
-            "to": self.model
+            "to": self.target
         }
-        if self.position is not None: dct['position'] = self.position
+        if self.position is not None:
+            dct['position'] = self.position
         return dct
 
     @classmethod
@@ -2532,10 +2517,11 @@ class LinkedModelProperty(BaseNode):
             link = data
         name = link["name"]
         display_name = link.get("displayName", link.get("display_name", name))
-        model = link["to"]
+        target = link["to"]
         id = link.get("id")
         position = link.get("position")
-        return cls(name=name, model=model, display_name=display_name, id=id, position=position)
+        return cls(name=name, target=target, display_name=display_name,
+            id=id, position=position)
 
     @as_native_str()
     def __repr__(self):
@@ -2577,27 +2563,34 @@ class BaseModelValue(object):
         return u"<BaseModelValue name='{}' value='{}' {}>".format(self.name, self.value, self.type)
 
 class LinkedModelValue(BaseNode):
-    def __init__(self, target_id, link_type_id, name="", display_name="", id=None):
-        self.name = name
-        self.display_name = display_name
+    def __init__(self, target_id, link_type_id, id=None, target_model=None):
         self.target = target_id
-        self.link = link_type_id
+        self.link_type = link_type_id
         self.id = id
+        self.target_model = None
 
     @classmethod
-    def from_dict(cls, data, name="", display_name=""):
-        return cls(target_id=data["to"], link_type_id=data["schemaLinkedPropertyId"], name=name, display_name=display_name, id=data["id"])
+    def from_dict(cls, data, target_model=None):
+        return cls(target_id=data["to"], link_type_id=data["schemaLinkedPropertyId"],
+            id=data["id"], target_model=target_model)
 
     def as_dict(self):
         return dict(
-            name=self.name,
-            displayName=self.display_name,
-            schemaLinkedPropertyId=self.link, 
-            to=target_record.id) 
+            schemaLinkedPropertyId=self.link_type, 
+            to=self.target)
+    
+    def get(self):
+        """
+        Get the record linked to by this object.
+        """
+        if self.target_model is not None:
+            return self.target_model.get(self.target)
+        else:
+            raise Exception("This value is not attached to any model")
 
     @as_native_str()
     def __repr__(self):
-        return "<LinkedModelValue type={} name='{}' id={}>".format(self.link, self.name, self.id)
+        return "<LinkedModelValue type={} id={}>".format(self.link_type, self.id)
 
 class BaseModelNode(BaseNode):
     _object_key = ''
@@ -2733,7 +2726,7 @@ class BaseModelNode(BaseNode):
           target_model (Model): Model that the property will link to
           display_name (str, optional): Display name of the property
         """
-        payload = LinkedModelProperty(name, display_name=display_name, model=target_model.id)
+        payload = LinkedModelProperty(name, target=target_model, display_name=display_name)
         prop = self._api.concepts.create_linked_property(self.dataset_id, self, payload)
         self.linked[prop.name] = prop
         return prop
@@ -2793,11 +2786,14 @@ class BaseModelNode(BaseNode):
         # verify linked property is in schema
         if isinstance(prop, string_types):
             # assume property name or ID
-            try:
-                prop_name, prop_id = next((p.name, p.id) for p in \
-                    self.linked.values() if (prop == p.id or prop == p.name))
-            except StopIteration:
+            for p in self.linked.values():
+                if prop == p.id or prop == p.name:
+                    prop_id = p.id
+                    prop_name = p.name
+                    break
+            else:
                 raise Exception("Property '{}' not found in model's schema.".format(property))
+                
         elif isinstance(prop, ModelProperty):
             prop_name = prop.name
             prop_id = prop.id
@@ -2821,8 +2817,7 @@ class BaseModelNode(BaseNode):
         """
         Get all linked properties attached to this Model.
         """
-        all_props = self._api.concepts.get_linked_properties(self.dataset_id, self)
-        return {p.name: p for p in all_props}
+        return self._api.concepts.get_linked_properties(self.dataset_id, self)
 
     def get_linked_property(self, name):
         """
@@ -2888,7 +2883,7 @@ class BaseRecord(BaseNode):
             for k,v in values.items():
                 self._set_value(name=k, value=v)
         else:
-            raise Exception("invalid type {}; values must either be a dict or list".format(type(properties)))
+            raise Exception("invalid type {}; values must either be a dict or list".format(type(values)))
 
     @property
     def values(self):
@@ -3434,27 +3429,39 @@ class Record(BaseRecord):
         # use batch endpoint to create relationships
         return self._api.concepts.relationships.instances.create_many(self.dataset_id, relationship_type, *relationships)
 
-    def get_links(self):
+    def get_linked_values(self):
         """
         Get all link values attached to this Record.
         """
-        return self._api.concepts.instances.get_links(self.dataset_id, self.model, self)
+        return self._api.concepts.instances.get_linked_values(self.dataset_id, self.model, self)
 
-    def get_link(self, link):
+    def get_linked_value(self, link):
         """
         Get a link value by name or id.
         """
-        all_links = self.get_links()
+        all_links = self.get_linked_values()
+
+        # First assume link is a link value id:
         for l in all_links:
-            if link == l.name or link == l.id:
+            if link == l.id:
                 return l
+
+        # Then assume link is a linked property name:
+        try:
+            prop_id = self.model.get_linked_property(link).id
+        except:
+            raise Exception("No link found with a name or ID matching '{}'".format(link))
+        else:
+            for l in all_links:
+                if prop_id == l.link_type:
+                    return l
         raise Exception("No link found with a name or ID matching '{}'".format(link))
 
     def link_to(self, target, link):
         """
         Attach a linked property value to the Record.
         target: the id or Record object of the target record
-        link: the id or LinkedModelProperty object to use
+        link: the id or LinkedModelProperty object of the link type
         """
         model = self.model
         
@@ -3464,17 +3471,20 @@ class Record(BaseRecord):
         if isinstance(link, LinkedModelProperty):
             link_id = link.id
         elif isinstance(link, str):
-            link_id = model.get_linked_property(link_name).id
-        
-        payload = dict(name=model.type, displayName=model.display_name,
-            schemaLinkedPropertyId=link_id, to=target)
+            link_id = model.get_linked_property(link).id
+
+        payload = dict(
+            name=model.type,
+            displayName=model.display_name,
+            schemaLinkedPropertyId=link_id,
+            to=target)
         return self._api.concepts.instances.create_link(self.dataset_id, self.model, self, payload)
 
     def unlink(self, link_name):
         """
         Delete a link by name or id.
         """
-        link = self.get_link(link_name)
+        link = self.get_linked_value(link_name)
         self._api.concepts.instances.remove_link(self.dataset_id, self.model, self, link)
 
     @property
