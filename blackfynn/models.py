@@ -2469,7 +2469,7 @@ class LinkedModelProperty(BaseNode):
 
         if isinstance(target, Model):
             self.target = target.id
-        elif isinstance(target, str):
+        elif isinstance(target, string_types):
             self.target = target
         else:
             raise Exception("'target' must be an id or a Model object")
@@ -3447,7 +3447,7 @@ class Record(BaseRecord):
 
         if isinstance(link, LinkedModelProperty):
             link_id = link.id
-        elif isinstance(link, str):
+        elif isinstance(link, string_types):
             link_id = model.get_linked_property(link).id
 
         payload = dict(
