@@ -30,6 +30,7 @@ def create_test_dataset(bf_client):
     """
     ds = bf_client.create_dataset("test_dataset_{}".format(uuid4()))
     ds_id = ds.id
-    all_dataset_ids = [x.id for x in bf_client.datasets()]
-    assert ds_id in all_dataset_ids
+    # Removing this check to limit the number of API calls:
+    # all_dataset_ids = [x.id for x in bf_client.datasets()]
+    # assert ds_id in all_dataset_ids
     return ds
