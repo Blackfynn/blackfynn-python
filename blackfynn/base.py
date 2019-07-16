@@ -8,6 +8,7 @@ import json
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
+from requests.exceptions import HTTPError
 from requests.packages.urllib3.util.retry import Retry
 
 # blackfynn
@@ -28,6 +29,17 @@ class BlackfynnRequest(object):
         self._response = None
 
         self._logger = log.get_logger('blackfynn.base.BlackfynnRequest')
+        
+    def expanded_raise_for_status(self,resp):
+        max_text_length=500
+        try:
+            resp.raise_for_status()
+        except HTTPError as e: #raise for status raise an HTTPError, so we can use it to grab the message
+            if resp.text:
+                raise HTTPError(u' Responsse Body: %s' % resp.content[:max_text_length], response=resp)
+            else:
+                raise e
+        return
 
     def _handle_response(self, resp):
         self._logger.debug(u"resp = {}".format(resp))
@@ -36,7 +48,7 @@ class BlackfynnRequest(object):
             raise UnauthorizedException()
 
         if not resp.status_code in [requests.codes.ok, requests.codes.created]:
-            resp.raise_for_status()
+            self.expanded_raise_for_status(resp)
         try:
             # return object from json
             resp.data = json.loads(resp.text)
