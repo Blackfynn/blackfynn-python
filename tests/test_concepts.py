@@ -9,24 +9,22 @@ from blackfynn.models import (
     ModelProperty,
     ModelPropertyEnumType,
     ModelPropertyType,
-    convert_datatype_to_type,
-    convert_type_to_datatype,
-    uncast_value
 )
 from tests.utils import create_test_dataset, current_ts, get_test_client
 
 
-@pytest.mark.parametrize('fromtype,datatype,totype', [
-    (ModelPropertyType(data_type=int), 'long', int),
+@pytest.mark.parametrize('from_type,blackfynn_type,data_type', [
     (int, 'long', int),
+    (ModelPropertyType(data_type=int), 'long', int),
     (ModelPropertyType(data_type=unicode), 'string', unicode),
-    (datetime.date, 'date', datetime.datetime),
+    (datetime.date, 'date', datetime.date),
     ('date', 'date', datetime.datetime),
-    (ModelPropertyType(data_type=str, format='date'), 'string', unicode),
+    (ModelPropertyType(data_type=str, format='date'), 'string', str),
 ])
-def test_model_type_conversion(fromtype, datatype, totype):
-    assert convert_type_to_datatype(fromtype) == datatype
-    assert  convert_datatype_to_type(datatype) == totype
+def test_model_type_conversion(from_type, blackfynn_type, data_type):
+    property_type = ModelPropertyType._build_from(from_type)
+    assert property_type.data_type == data_type
+    assert property_type._blackfynn_type == blackfynn_type
 
 
 @pytest.mark.parametrize('json,data_type,format,unit', [
@@ -35,7 +33,7 @@ def test_model_type_conversion(fromtype, datatype, totype):
     ({'type': 'double', 'unit': 'kg'}, float, None, 'kg'),
 ])
 def test_model_type_from_dict(json, data_type, format, unit):
-    decoded = ModelPropertyType.from_dict(json)
+    decoded = ModelPropertyType._build_from(json)
     assert isinstance(decoded, ModelPropertyType)
     assert decoded.data_type == data_type
     assert decoded.format == format
@@ -53,10 +51,10 @@ def test_model_with_invalid_properties(dataset):
 
 def test_date_formatting():
     d1 = datetime.datetime(2018, 8, 24, 15, 11, 25)
-    assert uncast_value(d1) == '2018-08-24T15:11:25.000000+00:00'
+    assert ModelPropertyType(datetime.datetime)._encode_value(d1) == '2018-08-24T15:11:25.000000+00:00'
 
     d2 = datetime.datetime(2018, 8, 24, 15, 11, 25, 1)
-    assert uncast_value(d2) == '2018-08-24T15:11:25.000001+00:00'
+    assert ModelPropertyType(datetime.datetime)._encode_value(d2) == '2018-08-24T15:11:25.000001+00:00'
 
 
 def test_models(dataset):
@@ -251,6 +249,7 @@ def test_simple_model_properties(dataset):
      assert updated_model_3.get_property('weight3').display_name == 'Weight'
 
      # Reverse look up property data types
+     ModelProperty('name', data_type='string', title=True, required=True)
      model_with_basic_props_4 = dataset.create_model('Basic_Props_4', description='a new description', schema=[
          ModelProperty('name', data_type='string', title=True, required=True),
          ModelProperty('age', data_type='long'),
@@ -338,35 +337,58 @@ def test_get_connected(dataset):
     assert len(related_models) == 2
 
 
-def test_model_properties_with_enum(dataset):
-    model_with_enum_props = dataset.create_model('Enum_Props', description='a new description', schema=[
+def test_array_model_properties(dataset):
+    model = dataset.create_model('Array_Properties', description='Description', schema=[
         ModelProperty('name', data_type=str, title=True),
-        ModelProperty('some_enum', data_type=ModelPropertyEnumType(data_type=float, enum=[1.0, 2.0, 3.0], unit="cm", multi_select=False)),
-        ModelProperty('some_array',
-                      data_type=ModelPropertyEnumType(data_type=str, enum=['foo', 'bar', 'baz'], multi_select=True)),
-        ModelProperty('non_enum_array', data_type=ModelPropertyEnumType(data_type=int, multi_select=True))
+        ModelProperty('int_array', data_type=ModelPropertyEnumType(
+            data_type=int, multi_select=True))
     ])
 
-    result = dataset.get_model(model_with_enum_props.id)
+    int_array = model.get_property('int_array')
+    assert int_array.type == int
+    assert int_array.multi_select == True
+    assert int_array.enum == None
 
-    assert result == model_with_enum_props
+    record = model.create_record({'name': 'A', 'int_array': [1, 2, 3]})
 
-    enum_property = result.get_property('some_enum')
-    array_property = result.get_property('some_array')
-    non_enum_array_property = result.get_property('non_enum_array')
+    gotten = model.get_all()[0]
+    assert gotten.values['int_array'] == [1, 2, 3]
 
-    assert (enum_property.type == float)
-    assert (enum_property.multi_select == False)
-    assert (enum_property.enum == [1.0, 2.0, 3.0])
-    assert (enum_property.unit == 'cm')
 
-    assert (array_property.type == unicode)
-    assert (array_property.multi_select == True)
-    assert (array_property.enum == ['foo', 'bar', 'baz'])
+def test_enum_model_properties(dataset):
+    model = dataset.create_model('Enum_Props', description='a new description', schema=[
+        ModelProperty('name', data_type=str, title=True),
+        ModelProperty('int_enum', data_type=ModelPropertyEnumType(
+            data_type=float, enum=[1.0, 2.0, 3.0], unit="cm", multi_select=False)),
+        ModelProperty('str_enum', data_type=ModelPropertyEnumType(
+            data_type=str, enum=['foo', 'bar', 'baz'], multi_select=True)),
+    ])
 
-    assert non_enum_array_property.type == int
-    assert non_enum_array_property.multi_select == True
-    assert non_enum_array_property.enum == None
+    assert model == dataset.get_model(model.id)
+
+    int_enum = model.get_property('int_enum')
+    str_enum = model.get_property('str_enum')
+
+    assert (int_enum.type == float)
+    assert (int_enum.multi_select == False)
+    assert (int_enum.enum == [1.0, 2.0, 3.0])
+    assert (int_enum.unit == 'cm')
+
+    assert (str_enum.type == unicode)
+    assert (str_enum.multi_select == True)
+    assert (str_enum.enum == ['foo', 'bar', 'baz'])
+
+    record = model.create_record({'name': 'A', 'int_enum': 1.0, 'str_enum': ['foo', 'bar']})
+
+    gotten = model.get_all()[0]
+    assert gotten.values['int_enum'] == 1.0
+    assert set(gotten.values['str_enum']) == set(['foo', 'bar'])
+
+    with pytest.raises(Exception, match=r"Value '5' is not a member*"):
+        model.create_record({'name': 'A', 'int_enum': 5, 'str_enum': ['foo', 'bar']})
+
+    with pytest.raises(Exception, match=r"Value 'blah' is not a member*"):
+        model.create_record({'name': 'A', 'int_enum': 1.0, 'str_enum': ['blah']})
 
 
 Graph = namedtuple('TestGraph', ['dataset', 'models', 'model_records',
@@ -512,4 +534,3 @@ def test_simple_query(simple_graph):
             .limit(0) \
             .run()
     assert len(result) == 0
-

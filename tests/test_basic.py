@@ -183,3 +183,11 @@ def test_client_host_overrides():
 
     bf = Blackfynn(streaming_host=host)
     assert bf.settings.streaming_api_host == host
+
+
+def test_exception_raise():
+    bf = Blackfynn()
+    with pytest.raises(Exception) as excinfo:
+        bf._api._call('get','/datasets/plop')
+    assert "plop not found" in str(excinfo.value)
+    

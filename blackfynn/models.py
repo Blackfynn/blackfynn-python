@@ -464,7 +464,7 @@ class BaseDataNode(BaseNode):
 
         if self.provenance_id is not None:
             d["provenanceId"] = self.provenance_id
-        
+
         return d
 
     @classmethod
@@ -2168,7 +2168,7 @@ class Collection(BaseCollection):
 
 # Python 2
 if PY2:
-    model_type_map = {
+    python_to_blackfynn_type_map = {
         str: 'string',
         unicode: 'string',
         int: 'long',
@@ -2179,7 +2179,7 @@ if PY2:
         datetime.datetime: 'date',
     }
 
-    model_type_reverse_map = {
+    blackfynn_to_python_type_map = {
         'string': unicode,
         'long': int,
         'double': float,
@@ -2189,7 +2189,7 @@ if PY2:
 
 # Python 3
 else:
-    model_type_map = {
+    python_to_blackfynn_type_map = {
         str: 'string',
         int: 'long',
         float: 'double',
@@ -2198,7 +2198,7 @@ else:
         datetime.datetime: 'date',
     }
 
-    model_type_reverse_map = {
+    blackfynn_to_python_type_map = {
         'string': str,
         'long': int,
         'double': float,
@@ -2206,74 +2206,7 @@ else:
         'date': datetime.datetime
     }
 
-valid_types = tuple(model_type_map.keys())
-
-
-def convert_type_to_datatype(model_type):
-    if isinstance(model_type, type) and model_type in model_type_map:
-        t = model_type_map[model_type]
-    elif isinstance(model_type, ModelPropertyType) and model_type.data_type in model_type_map:
-        t = model_type_map[model_type.data_type]
-    elif isinstance(model_type, string_types) and model_type.lower() in model_type_reverse_map:
-        t = model_type.lower()
-    else:
-        raise Exception('type {} not supported'.format(model_type))
-    return t
-
-def convert_datatype_to_type(data_type):
-    if isinstance(data_type, type) and data_type in model_type_map:
-        t = data_type
-    elif isinstance(data_type, ModelPropertyType) and data_type.data_type in model_type_map:
-        t = data_type.data_type
-    elif isinstance(data_type, string_types) and data_type.lower() in model_type_reverse_map:
-        t = model_type_reverse_map[data_type.lower()]
-    else:
-        raise Exception('data_type {} not supported'.format(data_type))
-    return t
-
-def wrap_datatype(data_type):
-    if isinstance(data_type, ModelPropertyType):
-        return data_type
-    return ModelPropertyType(data_type=data_type)
-
-def cast_value(value, data_type=None):
-    if data_type is None or value is None:
-        return value
-
-    if data_type not in valid_types:
-        raise Exception("data_type must be None or one of {}".format(valid_types))
-
-    if data_type in (datetime.date, datetime.datetime):
-        if isinstance(value, (datetime.date, datetime.datetime)):
-            v = value
-        else:
-            v = dateutil.parser.parse(value)
-    else:
-        v = data_type(value)
-
-    return v
-
-def uncast_value(value):
-    if value is None:
-        return
-
-    if not isinstance(value, valid_types):
-        raise Exception("value's type must be one of {}".format(valid_types))
-
-    if isinstance(value, (datetime.date, datetime.datetime)):
-        if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
-            value = pytz.utc.localize(value)
-
-        v = value.isoformat()
-
-        # isoformat() does not include microseconds if microseconds is
-        # 0, but we always need microseconds in the formatted string
-        if not value.microsecond:
-            v = "{}.000000{}".format(v[:-6], v[-6:])
-    else:
-        v = value
-
-    return v
+valid_python_types = tuple(python_to_blackfynn_type_map.keys())
 
 def target_type_string(target):
     if isinstance(target, Model):
@@ -2283,41 +2216,101 @@ def target_type_string(target):
     else:
         raise Exception("target must be a string or model")
 
+
 class ModelPropertyType(object):
+    '''
+    Representation of model property types in the platform.
+    '''
     def __init__(self, data_type, format=None, unit=None):
-        self.data_type = data_type
+        # Is this a supported literal Python type?
+        if isinstance(data_type, type) and data_type in python_to_blackfynn_type_map:
+            self.data_type = data_type
+
+        # Otherwise this must be a string representation of a Blackfynn type
+        elif isinstance(data_type, string_types) and data_type.lower() in blackfynn_to_python_type_map:
+            self.data_type =  blackfynn_to_python_type_map[data_type.lower()]
+
+        else:
+            raise Exception('Cannot create ModelPropertyType with data_type={}'.format(data_type))
+
         self.format = format
         self.unit = unit
+
+    @property
+    def _blackfynn_type(self):
+        return python_to_blackfynn_type_map[self.data_type]
+
+    @staticmethod
+    def _build_from(data):
+        """
+        Construct a ``ModelPropertyType`` from any data source. This is responsible
+        for dispatching construction to subclasses for special cases such as
+        enumerated and array types.
+        """
+        if isinstance(data, ModelPropertyType):
+            return data
+
+        elif isinstance(data, dict) and (data['type'].lower() == 'array' or 'items' in data):
+            return ModelPropertyEnumType.from_dict(data)
+
+        return ModelPropertyType.from_dict(data)
 
     @classmethod
     def from_dict(cls, data):
         if isinstance(data, dict):
-            if data['type'].lower() == 'array' or 'items' in data:
-                return ModelPropertyEnumType.from_dict(data)
+            return cls(data_type=data['type'], format = data.get('format'),
+                       unit = data.get('unit'))
 
-            t = data['type'].lower()
-            format = data.get('format')
-            unit = data.get('unit')
-        else:
-            t = data
-            format = None
-            unit = None
-
-        return cls(data_type=convert_datatype_to_type(t), format=format, unit=unit)
+        # Single string
+        return cls(data_type=data)
 
     def as_dict(self):
-        t = convert_type_to_datatype(self.data_type)
+        if (self.format is None) and (self.unit is None):
+            return self._blackfynn_type
 
-        if (self.format is not None) or (self.unit is not None):
-            d = dict(
-                type=t,
-                format=self.format,
-                unit=self.unit
-            )
-        else:
-            d = t
+        return dict(
+            type=self._blackfynn_type,
+            format=self.format,
+            unit=self.unit
+        )
 
-        return d
+    def _decode_value(self, value):
+        """
+        Decode a model value received from the Blackfynn API into the Python
+        representation mandated by this `ModelPropertyType`.
+        """
+        if value is None:
+            return None
+
+        elif self.data_type in (datetime.date, datetime.datetime):
+            if isinstance(value, (datetime.date, datetime.datetime)):
+                return value
+            else:
+                return dateutil.parser.parse(value)
+
+        return self.data_type(value)
+
+    def _encode_value(self, value):
+        """
+        Encode a Python value into something that can be sent to the Blackfynn API.
+        """
+        if value is None:
+            return None
+
+        elif isinstance(value, (datetime.date, datetime.datetime)):
+            if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+                value = pytz.utc.localize(value)
+
+            v = value.isoformat()
+
+            # isoformat() does not include microseconds if microseconds is
+            # 0, but we always need microseconds in the formatted string
+            if not value.microsecond:
+                v = "{}.000000{}".format(v[:-6], v[-6:])
+
+            return v
+
+        return self.data_type(value)
 
     @as_native_str()
     def __repr__(self):
@@ -2325,30 +2318,86 @@ class ModelPropertyType(object):
                                                                                            self.unit)
 
 class ModelPropertyEnumType(ModelPropertyType):
+    """
+    A special case of a ``ModelPropertyType`` that contains enumerated values
+    and arrays of values.
+
+    This can take one of several forms:
+
+      * If ``enum`` is a list of objects, then the values of this property may
+        only be one of the given values.
+      * If ``multi_select`` is ``True``, then values of this property may be lists
+        of objects.
+      * If ``enum`` is a list of objects *and* ``multi_select`` is ``True``, then
+        values of this property must be lists of items in ``enum``.
+    """
     def __init__(self, data_type, format=None, unit=None, enum=None, multi_select=False):
         super(ModelPropertyEnumType, self).__init__(data_type, format, unit)
+
+        if enum is not None:
+            enum = list(enum)
         self.enum = enum
+
         self.multi_select = multi_select
         self.selection_type = 'array' if self.multi_select else 'enum'
 
+    def _decode_value(self, value):
+        """
+        Decode a model value received from the Blackfynn API into the Python
+        representation mandated by this ``ModelPropertyType``.
+        """
+        if value is None:
+            return None
+
+        self._assert_value_in_enum(value)
+
+        if self.multi_select:
+            return [super(ModelPropertyEnumType, self)._decode_value(v) for v in value]
+
+        return super(ModelPropertyEnumType, self)._decode_value(value)
+
+    def _encode_value(self, value):
+        """
+        Encode a Python value into something that can be sent to the Blackfynn API.
+        """
+        if value is None:
+            return None
+
+        self._assert_value_in_enum(value)
+
+        if self.multi_select:
+            return [super(ModelPropertyEnumType, self)._encode_value(v) for v in value]
+
+        return super(ModelPropertyEnumType, self)._encode_value(value)
+
+    def _assert_value_in_enum(self, value):
+        """Check that values are in the enumerated type."""
+        if self.enum and self.multi_select:
+            for v in value:
+                if v not in self.enum:
+                    raise Exception("Value '{}' is not a member of {}".format(v, self.enum))
+
+        elif self.enum and value not in self.enum:
+            raise Exception("Value '{}' is not a member of {}".format(value, self.enum))
+
     @classmethod
     def from_dict(cls, data):
-
         selection_type = data['type'].lower()
         multi_select = selection_type == 'array'
-        t = data['items'].get('type')
+        data_type = data['items'].get('type')
         format = data['items'].get('format')
         unit = data['items'].get('unit')
         enum = data['items'].get('enum')
 
-        return cls(data_type=convert_datatype_to_type(t), format=format, unit=unit, enum=enum,
+        return cls(data_type=data_type,
+                   format=format, unit=unit, enum=enum,
                    multi_select=multi_select)
 
     def as_dict(self):
         return dict(
             type=self.selection_type,
             items=dict(
-                type=convert_type_to_datatype(self.data_type),
+                type=self._blackfynn_type,
                 format=self.format,
                 unit=self.unit,
                 enum=self.enum
@@ -2367,7 +2416,7 @@ class BaseModelProperty(object):
         self.id = id
         self.name = name
         self.display_name = display_name or name
-        self._type = wrap_datatype(data_type)
+        self.type = data_type # passed through @type.setter
         self.locked = locked
         self.default = default
         self.title = title
@@ -2399,7 +2448,7 @@ class BaseModelProperty(object):
     @classmethod
     def from_dict(cls, data):
         display_name = data.get('displayName', data.get('display_name', dict()))
-        data_type = ModelPropertyType.from_dict(data.get('data_type', data.get('dataType')))
+        data_type = data.get('data_type', data.get('dataType'))
         locked = data.get('locked', False)
         default = data.get('default', True)
         title = data.get('title', data.get('conceptTitle', False))
@@ -2429,7 +2478,15 @@ class BaseModelProperty(object):
 
     @property
     def type(self):
-        return convert_datatype_to_type(self._type)
+        return self._type.data_type
+
+    @type.setter
+    def type(self, type):
+        self._type = ModelPropertyType._build_from(type)
+
+    @deprecated(version="2.14.0", reason="Set 'ModelProperty.type = type' directly")
+    def set_type(self, type):
+        self.type = type
 
     @property
     def unit(self):
@@ -2446,9 +2503,6 @@ class BaseModelProperty(object):
     @property
     def multi_select(self):
         return self._type.multi_select
-
-    def set_type(self, type):
-        self._type = wrap_datatype(type)
 
     @as_native_str()
     def __repr__(self):
@@ -2506,18 +2560,28 @@ class LinkedModelProperty(BaseNode):
             self.name, self.id)
 
 class BaseModelValue(object):
-    def __init__(self, name, value, *args, **kwargs):
+    def __init__(self, name, value, data_type=None):
         assert " " not in name, "name cannot contain spaces, alternative names include {} and {}".format(name.replace(" ", "_"), name.replace(" ", "-"))
 
         self.name = name
+        self.data_type = ModelPropertyType._build_from(data_type)
+        self.value = value # Decoded in @value.setter
 
-        data_type = kwargs.pop('data_type', None)
-        self.type = convert_datatype_to_type(data_type)
+    @property
+    def value(self):
+        return self._value
 
-        self.set_value(value)
+    @value.setter
+    def value(self, value):
+        self._value = self.data_type._decode_value(value)
 
+    @deprecated(version="2.14.0", reason="Set 'ModelValue.value = value' directly")
     def set_value(self, value):
-        self.value = cast_value(value, self.type)
+        self.value = value
+
+    @property
+    def type(self):
+        return self.data_type.data_type
 
     @classmethod
     def from_tuple(cls, data):
@@ -2525,12 +2589,13 @@ class BaseModelValue(object):
 
     @classmethod
     def from_dict(cls, data):
-        data_type = ModelPropertyType.from_dict(data.get('data_type', data.get('dataType')))
-
-        return cls(name=data['name'], value=data['value'], data_type=data_type)
+        return cls(name=data['name'],
+                   value=data['value'],
+                   data_type=data.get('data_type', data.get('dataType')))
 
     def as_dict(self):
-        return dict(name=self.name, value=uncast_value(self.value), dataType=convert_type_to_datatype(self.type))
+        return dict(name=self.name, value=self.data_type._encode_value(self.value),
+                    dataType=self.data_type._blackfynn_type)
 
     def as_tuple(self):
         return (self.name, self.value)
@@ -2819,6 +2884,7 @@ class BaseRecord(BaseNode):
     _value_cls = BaseModelValue
 
     def __init__(self, dataset_id, type, *args, **kwargs):
+
         self.type       = type
         self.dataset_id  = dataset_id
         self.created_at = kwargs.pop('createdAt', None)
@@ -2826,6 +2892,7 @@ class BaseRecord(BaseNode):
         self.updated_at = kwargs.pop('updatedAt', None)
         self.updated_by = kwargs.pop('updatedBy', None)
         values          = kwargs.pop('values', None)
+
 
         super(BaseRecord, self).__init__(*args, **kwargs)
 
@@ -2838,7 +2905,7 @@ class BaseRecord(BaseNode):
     def _set_value(self, name, value):
         if name in self._values:
             v = self._values[name]
-            v.set_value(value)
+            v.value = value
         else:
             v = self._value_cls(name=name, value=value)
             self._values[v.name] = v
@@ -3141,7 +3208,7 @@ class Model(BaseModelNode):
 
         self._validate_values_against_schema(values)
 
-        values = [dict(name=k, value=v, dataType=self.schema.get(k).type) for k,v in values.items()]
+        values = [dict(name=k, value=v, dataType=self.schema.get(k)._type) for k,v in values.items()]
         ci = Record(dataset_id=self.dataset_id, type=self.type, values=values)
         ci = self._api.concepts.instances.create(self.dataset_id, ci)
         return ci
@@ -3255,9 +3322,6 @@ class Record(BaseRecord):
     """
     _object_key = ''
     _value_cls = ModelValue
-
-    def __init__(self, dataset_id, type, *args, **kwargs):
-        super(Record, self).__init__(dataset_id, type, *args, **kwargs)
 
     def _get_relationship_type(self, relationship):
         return relationship.type if isinstance(relationship, RelationshipType) else relationship
@@ -3611,7 +3675,7 @@ class RelationshipType(BaseModelNode):
     _object_key = ''
     _property_cls = RelationshipProperty
 
-    def __init__(self, dataset_id, name, display_name=None, description=None, locked=False, source=None, destination=None, *args, **kwargs): 
+    def __init__(self, dataset_id, name, display_name=None, description=None, locked=False, source=None, destination=None, *args, **kwargs):
         kwargs.pop('type', None)
         self.destination = destination
         self.source = source
