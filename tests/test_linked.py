@@ -2,15 +2,8 @@ import pytest
 from uuid import uuid4
 
 from blackfynn.models import (
-    DataPackage,
     LinkedModelProperty,
-    LinkedModelValue,
     ModelProperty,
-    ModelPropertyEnumType,
-    ModelPropertyType,
-    convert_datatype_to_type,
-    convert_type_to_datatype,
-    uncast_value
 )
 from tests.utils import create_test_dataset
 
