@@ -32,12 +32,11 @@ class BlackfynnRequest(object):
         self._logger = log.get_logger('blackfynn.base.BlackfynnRequest')
         
     def raise_for_status(self,resp):
-        max_text_length=500
         try:
             resp.raise_for_status()
         except HTTPError as e: #raise for status raise an HTTPError, so we can use it to grab the message
             if resp.text:
-                raise_from(HTTPError(resp.content,response=resp), e)
+                raise_from(HTTPError(resp.content, response=resp), e)
             else:
                 raise e
         return
