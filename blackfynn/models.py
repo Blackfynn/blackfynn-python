@@ -2605,34 +2605,41 @@ class BaseModelValue(object):
         return u"<BaseModelValue name='{}' value='{}' {}>".format(self.name, self.value, self.type)
 
 class LinkedModelValue(BaseNode):
-    def __init__(self, target_id, link_type_id, id=None, target_model=None):
-        self.target = target_id
-        self.link_type = link_type_id
+    def __init__(self, source_model, target_model, source_record, target_record, link_type, id=None):
+        self.source_model = source_model
+        self.target_model = target_model
+        self.source_record_id = source_record
+        self.target_record_id = target_record
+        self.type = link_type
         self.id = id
-        self.target_model = None
-
+    
     @classmethod
-    def from_dict(cls, data, target_model=None):
-        return cls(target_id=data["to"], link_type_id=data["schemaLinkedPropertyId"],
-            id=data["id"], target_model=target_model)
-
+    def from_dict(cls, data, source_model, target_model, link_type):
+        return cls(
+            source_model=source_model,
+            target_model=target_model,
+            source_record=data["from"],
+            target_record=data["to"],
+            link_type=link_type,
+            id=data["id"])
+    
     def as_dict(self):
         return dict(
-            schemaLinkedPropertyId=self.link_type, 
-            to=self.target)
-    
-    def get(self):
-        """
-        Get the record linked to by this object.
-        """
-        if self.target_model is not None:
-            return self.target_model.get(self.target)
-        else:
-            raise Exception("This value is not attached to any model")
+            schemaLinkedPropertyId=self.type.id, 
+            to=self.target_record_id)
+
+    @property
+    def source_record(self):
+        return self.source_model.get(self.source_record_id)
+
+    @property
+    def target_record(self):
+        return self.target_model.get(self.target_record_id)
+        return self.model.get(self.target_id)
 
     @as_native_str()
     def __repr__(self):
-        return "<LinkedModelValue type={} id={}>".format(self.link_type, self.id)
+        return "<LinkedModelValue type={} id={}>".format(self.type, self.id)
 
 class BaseModelNode(BaseNode):
     _object_key = ''
@@ -3494,11 +3501,11 @@ class Record(BaseRecord):
             raise Exception("No link found with a name or ID matching '{}'".format(link))
         else:
             for l in all_links:
-                if prop_id == l.link_type:
+                if prop_id == l.type.id:
                     return l
         raise Exception("No link found with a name or ID matching '{}'".format(link))
 
-    def link_to(self, target, link):
+    def add_linked_value(self, target, link):
         """
         Attach a linked property value to the Record.
         target: the id or Record object of the target record
@@ -3521,7 +3528,7 @@ class Record(BaseRecord):
             to=target)
         return self._api.concepts.instances.create_link(self.dataset_id, self.model, self, payload)
 
-    def unlink(self, link_name):
+    def delete_linked_value(self, link_name):
         """
         Delete a link by name or id.
         """

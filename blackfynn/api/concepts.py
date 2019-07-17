@@ -418,7 +418,13 @@ class RecordsAPI(ModelsAPIBase):
         concept_id = self._get_id(concept)
         instance_id = self._get_id(instance)
         resp = self._get(self._uri('/{dataset_id}/concepts/{id}/instances/{instance_id}/linked', dataset_id=dataset_id, id=concept_id, instance_id=instance_id))
-        return [LinkedModelValue.from_dict(r, target_model=concept) for r in resp]
+        values = []
+        for r in resp:
+            link_type = concept.get_linked_property(r["schemaLinkedPropertyId"])
+            target = concept._api.concepts.get(dataset, link_type.target)
+            values.append(LinkedModelValue.from_dict(r, source_model=concept,
+                target_model=target, link_type=link_type))
+        return values
 
     def create_link(self, dataset, concept, instance, payload):
         dataset_id = self._get_id(dataset)
@@ -427,11 +433,14 @@ class RecordsAPI(ModelsAPIBase):
 
         # Delete any existing links of the given type:
         for link in self.get_linked_values(dataset, concept, instance):
-            if link.link_type == payload['schemaLinkedPropertyId']:
+            if link.type.id == payload['schemaLinkedPropertyId']:
                 self.remove_link(dataset, concept, instance, link)
         
         resp = self._post(self._uri('/{dataset_id}/concepts/{id}/instances/{instance_id}/linked', dataset_id=dataset_id, id=concept_id, instance_id=instance_id), json=payload)
-        return LinkedModelValue.from_dict(resp, target_model=concept)
+        link_type = concept.get_linked_property(resp["schemaLinkedPropertyId"])
+        target = concept._api.concepts.get(dataset, link_type.target)
+        return LinkedModelValue.from_dict(resp, source_model=concept,
+            target_model=target, link_type=link_type)
 
     def remove_link(self, dataset, concept, instance, value):
         dataset_id = self._get_id(dataset)

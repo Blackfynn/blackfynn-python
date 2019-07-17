@@ -116,15 +116,15 @@ def test_add_link(dataset):
     # make records and link them
     source_rec = source.create_record({'name': 'source_record'})
     target_rec = target.create_record({'name': 'target_record'})
-    link = source_rec.link_to(target_rec, prop)
-    assert any(link.target == target_rec.id for link in source_rec.get_linked_values())
+    link = source_rec.add_linked_value(target_rec, prop)
+    assert link.id == source_rec.get_linked_value('link').id
 
     # prevent duplicate links from being created
     target_rec2 = target.create_record({'name': 'second_target'})
-    link2 = source_rec.link_to(target_rec2, prop)
+    link2 = source_rec.add_linked_value(target_rec2, prop)
     links = source_rec.get_linked_values()
     assert len(links) == 1
-    assert links[0].target == target_rec2.id
+    assert links[0].target_record_id == target_rec2.id
 
 def test_get_link(dataset):
     # make a model and add a linked property
@@ -135,8 +135,12 @@ def test_get_link(dataset):
     # make records and link them
     source_rec = source.create_record({'name': 'source_record'})
     target_rec = target.create_record({'name': 'target_record'})
-    link = source_rec.link_to(target_rec, prop)
-    assert link.id == source_rec.get_linked_value(link.id).id
+    link = source_rec.add_linked_value(target_rec, prop)
+    link2 = source_rec.get_linked_value('link')
+    link3 = source_rec.get_linked_value(link.id)
+    assert link.id == link2.id == link3.id
+    assert link.source_model.id == source.id
+    assert link.target_model.id == target.id
 
 def test_remove_link(dataset):
     # make a model and add a linked property
@@ -147,9 +151,8 @@ def test_remove_link(dataset):
     # make records and link them
     source_rec = source.create_record({'name': 'source_record'})
     target_rec = target.create_record({'name': 'target_record'})
-    link = source_rec.link_to(target_rec, prop)
-    assert link.id == source_rec.get_linked_value(link.id).id
+    link = source_rec.add_linked_value(target_rec, prop)
 
     # delete the link
-    source_rec.unlink(link.id)
+    source_rec.delete_linked_value(link.id)
     assert not any(link.target == target_rec.id for link in source_rec.get_linked_values())
