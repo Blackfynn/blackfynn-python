@@ -10,6 +10,7 @@ Documentation at https://developer.blackfynn.io/python/
 
 ### Fixed
 - Adding and retrieving array model values
+- Propagating HTTPerror message back to the user
 
 ### Changed
 - Deprecated the `set_type` method on model properties. You can set property types using `ModelProperty.type` directly.
