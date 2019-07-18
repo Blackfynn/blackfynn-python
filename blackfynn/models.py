@@ -2093,9 +2093,9 @@ class Dataset(BaseCollection):
         Defines a ``RelationshipType`` on the platform.
 
         Args:
-            name (str):              name of the relationship
-            description (str):       description of the relationship
-            schema (dict, optional): definitation of the relationship's schema
+            name (str):                  name of the relationship
+            description (str):           description of the relationship
+            schema (dict, optional):     definitation of the relationship's schema
 
         Returns:
             The newly created ``RelationshipType``
@@ -2508,6 +2508,56 @@ class BaseModelProperty(object):
     def __repr__(self):
         return u"<BaseModelProperty name='{}' {}>".format(self.name, self.type)
 
+class LinkedModelProperty(BaseNode):
+    def __init__(self, name, target, display_name=None, id=None, position=None):
+        assert " " not in name, "name cannot contain spaces, alternative names include {} and {}".format(name.replace(" ", "_"), name.replace(" ", "-"))
+        self._object_key = ''
+        self.name = name
+        self.id = id
+        self.position = position
+
+        if display_name is None:
+            self.display_name = name
+        else:
+            self.display_name = display_name
+
+        if isinstance(target, Model):
+            self.target = target.id
+        elif isinstance(target, string_types):
+            self.target = target
+        else:
+            raise Exception("'target' must be an id or a Model object")
+
+    def as_dict(self):
+        dct = {
+            "name": self.name,
+            "displayName": self.display_name,
+            "to": self.target
+        }
+        if self.position is not None:
+            dct['position'] = self.position
+        return dct
+
+    @classmethod
+    def from_dict(cls, data):
+        if "link" in data:
+            # data came from a GET request
+            link = data["link"]
+        else:
+            # data came from a POST or PUT
+            link = data
+        name = link["name"]
+        display_name = link.get("displayName", link.get("display_name", name))
+        target = link["to"]
+        id = link.get("id")
+        position = link.get("position")
+        return cls(name=name, target=target, display_name=display_name,
+            id=id, position=position)
+
+    @as_native_str()
+    def __repr__(self):
+        return "<LinkedModelProperty name='{}' id='{}'>".format(
+            self.name, self.id)
 
 class BaseModelValue(object):
     def __init__(self, name, value, data_type=None):
@@ -2554,6 +2604,42 @@ class BaseModelValue(object):
     def __repr__(self):
         return u"<BaseModelValue name='{}' value='{}' {}>".format(self.name, self.value, self.type)
 
+class LinkedModelValue(BaseNode):
+    def __init__(self, source_model, target_model, source_record, target_record, link_type, id=None):
+        self.source_model = source_model
+        self.target_model = target_model
+        self.source_record_id = source_record
+        self.target_record_id = target_record
+        self.type = link_type
+        self.id = id
+    
+    @classmethod
+    def from_dict(cls, data, source_model, target_model, link_type):
+        return cls(
+            source_model=source_model,
+            target_model=target_model,
+            source_record=data["from"],
+            target_record=data["to"],
+            link_type=link_type,
+            id=data["id"])
+    
+    def as_dict(self):
+        return dict(
+            schemaLinkedPropertyId=self.type.id, 
+            to=self.target_record_id)
+
+    @property
+    def source_record(self):
+        return self.source_model.get(self.source_record_id)
+
+    @property
+    def target_record(self):
+        return self.target_model.get(self.target_record_id)
+        return self.model.get(self.target_id)
+
+    @as_native_str()
+    def __repr__(self):
+        return "<LinkedModelValue type={} id={}>".format(self.type, self.id)
 
 class BaseModelNode(BaseNode):
     _object_key = ''
@@ -2570,6 +2656,7 @@ class BaseModelNode(BaseNode):
         self.created_at   = kwargs.pop('createdAt', None)
         self.updated_at   = kwargs.pop('updatedAt', None)
         schema            = kwargs.pop('schema', None)
+        self.linked       = kwargs.pop('linked', {})
 
         super(BaseModelNode, self).__init__(*args, **kwargs)
 
@@ -2679,6 +2766,32 @@ class BaseModelNode(BaseNode):
         self._add_properties(properties)
         self.update()
 
+    def add_linked_property(self, name, target_model, display_name=None):
+        """
+        Add a linked property to the model.
+        
+        Args:
+          name (str): Name of the property
+          target_model (Model): Model that the property will link to
+          display_name (str, optional): Display name of the property
+        """
+        payload = LinkedModelProperty(name, target=target_model, display_name=display_name)
+        prop = self._api.concepts.create_linked_property(self.dataset_id, self, payload)
+        self.linked[prop.name] = prop
+        return prop
+
+    def add_linked_properties(self, properties):
+        """
+        Add multiple linked properties to the model.
+
+        Args:
+          properties (list): List of LinkedModelProperty objects
+        """
+        props = self._api.concepts.create_linked_properties(self.dataset_id, self, properties)
+        for prop in props:
+            self.linked[prop.name] = prop
+        return props
+
     def remove_property(self, property):
         """
         Remove property from model schema.
@@ -2715,6 +2828,30 @@ class BaseModelNode(BaseNode):
         self._api.concepts.delete_property(self.dataset_id, self, prop_id)
         self.schema.pop(prop_name)
 
+    def remove_linked_property(self, prop):
+        """
+        Delete the linked property with the given name or id.
+        """
+        # verify linked property is in schema
+        if isinstance(prop, string_types):
+            # assume property name or ID
+            for p in self.linked.values():
+                if prop == p.id or prop == p.name:
+                    prop_id = p.id
+                    prop_name = p.name
+                    break
+            else:
+                raise Exception("Property '{}' not found in model's schema.".format(property))
+                
+        elif isinstance(prop, ModelProperty):
+            prop_name = prop.name
+            prop_id = prop.id
+        else:
+            raise Exception("Expected a LinkedModelProperty, found type {}".format(type(property)))
+
+        self._api.concepts.delete_linked_property(self.dataset_id, self, prop_id)
+        self.linked.pop(prop_name)
+
     def get_property(self, name):
         """
         Gets the property object by name.
@@ -2724,6 +2861,21 @@ class BaseModelNode(BaseNode):
             float
         """
         return self.schema.get(name, None)
+
+    def get_linked_properties(self):
+        """
+        Get all linked properties attached to this Model.
+        """
+        return self._api.concepts.get_linked_properties(self.dataset_id, self)
+
+    def get_linked_property(self, name):
+        """
+        Get a linked property by name or id.
+        """
+        for k,v in self.get_linked_properties().items():
+            if k == name or v.id == name:
+                return v
+        raise Exception("No linked property found with name or id '{}'".format(name))
 
     def as_dict(self):
         return dict(
@@ -2782,7 +2934,7 @@ class BaseRecord(BaseNode):
             for k,v in values.items():
                 self._set_value(name=k, value=v)
         else:
-            raise Exception("invalid type {}; values must either be a dict or list".format(type(properties)))
+            raise Exception("invalid type {}; values must either be a dict or list".format(type(values)))
 
     @property
     def values(self):
@@ -3325,6 +3477,64 @@ class Record(BaseRecord):
         # use batch endpoint to create relationships
         return self._api.concepts.relationships.instances.create_many(self.dataset_id, relationship_type, *relationships)
 
+    def get_linked_values(self):
+        """
+        Get all link values attached to this Record.
+        """
+        return self._api.concepts.instances.get_linked_values(self.dataset_id, self.model, self)
+
+    def get_linked_value(self, link):
+        """
+        Get a link value by name or id.
+        """
+        all_links = self.get_linked_values()
+
+        # First assume link is a link value id:
+        for l in all_links:
+            if link == l.id:
+                return l
+
+        # Then assume link is a linked property name:
+        try:
+            prop_id = self.model.get_linked_property(link).id
+        except:
+            raise Exception("No link found with a name or ID matching '{}'".format(link))
+        else:
+            for l in all_links:
+                if prop_id == l.type.id:
+                    return l
+        raise Exception("No link found with a name or ID matching '{}'".format(link))
+
+    def add_linked_value(self, target, link):
+        """
+        Attach a linked property value to the Record.
+        target: the id or Record object of the target record
+        link: the id or LinkedModelProperty object of the link type
+        """
+        model = self.model
+        
+        if isinstance(target, Record):
+            target = target.id
+
+        if isinstance(link, LinkedModelProperty):
+            link_id = link.id
+        elif isinstance(link, string_types):
+            link_id = model.get_linked_property(link).id
+
+        payload = dict(
+            name=model.type,
+            displayName=model.display_name,
+            schemaLinkedPropertyId=link_id,
+            to=target)
+        return self._api.concepts.instances.create_link(self.dataset_id, self.model, self, payload)
+
+    def delete_linked_value(self, link_name):
+        """
+        Delete a link by name or id.
+        """
+        link = self.get_linked_value(link_name)
+        self._api.concepts.instances.remove_link(self.dataset_id, self.model, self, link)
+
     @property
     def model(self):
         """
@@ -3632,9 +3842,9 @@ class RelationshipType(BaseModelNode):
     def as_dict(self):
         d = super(RelationshipType, self).as_dict()
         d['type'] = 'relationship'
-        if self.source != None:
+        if self.source is not None:
             d['from'] = self.source
-        if self.destination != None:
+        if self.destination is not None:
             d['to'] = self.destination
         return d
 

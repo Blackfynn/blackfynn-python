@@ -9,6 +9,8 @@ import requests
 from blackfynn.api.base import APIBase
 from blackfynn.models import (
     DataPackage,
+    LinkedModelProperty,
+    LinkedModelValue,
     Model,
     ModelProperty,
     ModelTemplate,
@@ -68,6 +70,12 @@ class ModelsAPI(ModelsAPIBase):
         concept_id = self._get_id(concept)
         resp = self._get(self._uri('/{dataset_id}/concepts/{id}/properties', dataset_id=dataset_id, id=concept_id))
         return [ModelProperty.from_dict(r) for r in resp]
+    
+    def get_linked_properties(self, dataset, concept):
+        dataset_id = self._get_id(dataset)
+        concept_id = self._get_id(concept)
+        resp = self._get(self._uri('/{dataset_id}/concepts/{id}/linked', dataset_id=dataset_id, id=concept_id))
+        return {r['link']['name']: LinkedModelProperty.from_dict(r) for r in resp}
 
     def update_properties(self, dataset, concept):
         assert isinstance(concept, Model), "concept must be type Model"
@@ -76,6 +84,13 @@ class ModelsAPI(ModelsAPIBase):
         dataset_id = self._get_id(dataset)
         resp = self._put(self._uri('/{dataset_id}/concepts/{id}/properties', dataset_id=dataset_id, id=concept.id), json=data)
         return [ModelProperty.from_dict(r) for r in resp]
+
+    def update_linked_property(self, dataset, concept, prop):
+        dataset_id = self._get_id(dataset)
+        concept_id = self._get_id(concept)
+        prop_id = self._get_id(prop)
+        resp = self._put(self._uri('/{dataset_id}/concepts/{id}/linked/{prop_id}', dataset_id=dataset_id, id=concept_id, prop_id=prop_id), json=prop.as_dict())
+        return LinkedModelProperty.from_dict(resp)
 
     def delete_property(self, dataset, concept, prop):
         dataset_id  = self._get_id(dataset)
@@ -86,12 +101,19 @@ class ModelsAPI(ModelsAPIBase):
                 concept_id  = concept_id,
                 property_id = property_id))
 
+    def delete_linked_property(self, dataset, concept, prop):
+        dataset_id = self._get_id(dataset)
+        concept_id = self._get_id(concept)
+        prop_id = self._get_id(prop)
+        self._del(self._uri('/{dataset_id}/concepts/{id}/linked/{prop_id}', dataset_id=dataset_id, id=concept_id, prop_id=prop_id))
+
     def get(self, dataset, concept):
         dataset_id = self._get_id(dataset)
         concept_id = self._get_id(concept)
         r = self._get(self._uri('/{dataset_id}/concepts/{id}', dataset_id=dataset_id, id=concept_id))
         r['dataset_id'] = r.get('dataset_id', dataset_id)
         r['schema'] = self.get_properties(dataset, concept)
+        r['linked'] = self.get_linked_properties(dataset, concept)
         return Model.from_dict(r, api=self.session)
 
     def delete(self, dataset, concept):
@@ -108,7 +130,10 @@ class ModelsAPI(ModelsAPIBase):
         r['dataset_id'] = r.get('dataset_id', dataset_id)
         if concept.schema:
             r['schema'] = self.update_properties(dataset, concept)
-        return Model.from_dict(r, api=self.session)
+        if concept.linked:
+            r['linked'] = {name: self.update_linked_property(dataset, concept, link) for name,link in concept.linked.items()}
+        updated = Model.from_dict(r, api=self.session)
+        return updated
 
     def create(self, dataset, concept):
         assert isinstance(concept, Model), "concept must be type Model"
@@ -130,8 +155,22 @@ class ModelsAPI(ModelsAPIBase):
                     )
                 else:
                     raise
-
         return Model.from_dict(r, api=self.session)
+    
+    def create_linked_property(self, dataset, concept, prop):
+        dataset_id = self._get_id(dataset)
+        concept_id = self._get_id(concept)
+        assert prop.name not in self.get_linked_properties(dataset, concept), "Linked property '{}' already exists".format(prop.name)
+        resp = self._post(self._uri('/{dataset_id}/concepts/{id}/linked', dataset_id=dataset_id, id=concept_id), json=prop.as_dict())
+        return LinkedModelProperty.from_dict(resp)
+
+    def create_linked_properties(self, dataset, concept, props):
+        dataset_id = self._get_id(dataset)
+        concept_id = self._get_id(concept)
+        for p in props:
+            assert p.name not in self.get_linked_properties(dataset, concept), "Linked property '{}' already exists".format(p.name)
+        resp = self._post(self._uri('/{dataset_id}/concepts/{id}/linked/bulk', dataset_id=dataset_id, id=concept_id), json=[p.as_dict() for p in props])
+        return [LinkedModelProperty.from_dict(r) for r in resp]
 
     def get_all(self, dataset):
         dataset_id = self._get_id(dataset)
@@ -139,7 +178,10 @@ class ModelsAPI(ModelsAPIBase):
         for r in resp:
             r['dataset_id'] = r.get('dataset_id', dataset_id)
             r['schema'] = self.get_properties(dataset, r['id'])
+            r['linked'] = self.get_linked_properties(dataset, r['id'])
         concepts = [Model.from_dict(r, api=self.session) for r in resp]
+        # for concept in concepts:
+        #     concept.linked = {x.name: x for x in self.get_linked_properties(dataset, concept)}
         return { c.type: c for c in concepts }
 
     def delete_instances(self, dataset, concept, *instances):
@@ -164,7 +206,6 @@ class ModelsAPI(ModelsAPIBase):
             ))
         return [DataPackage.from_dict(pkg, api=self.session) for r,pkg in resp]
 
-
     def get_connected(self, dataset, model):
         """ Return a list of concepts related to the given model """
         dataset_id = self._get_id(dataset)
@@ -176,6 +217,7 @@ class ModelsAPI(ModelsAPIBase):
         for r in resp:
             r['dataset_id'] = r.get('dataset_id', dataset_id)
             r['schema'] = self.get_properties(dataset, r['id'])
+            r['linked'] = self.get_linked_properties(dataset, r['id'])
 
         concepts = [Model.from_dict(r, api=self.session) for r in resp]
         return {c.type: c for c in concepts}
@@ -190,6 +232,7 @@ class ModelsAPI(ModelsAPIBase):
         for r in resp:
             r['dataset_id'] = r.get('dataset_id', dataset_id)
             r['schema'] = self.get_properties(dataset, r['id'])
+            r['linked'] = self.get_linked_properties(dataset, r['id'])
         concepts = [Model.from_dict(r, api=self.session) for r in resp]
         return concepts
 
@@ -201,17 +244,23 @@ class ModelsAPI(ModelsAPIBase):
         # What is returned is a list mixing
         results = {
             'models': [],
-            'relationships': []
+            'relationships': [],
+            'linked_properties': []
         }
         for r in resp:
             r['dataset_id'] = r.get('dataset_id', dataset_id)
-            if 'from' in r:
+            if r.get('type')  == 'schemaRelationship':
                 # This is a relationship
                 results['relationships'].append(
                     Relationship.from_dict(r, api=self.session))
+            elif r.get('type')  == 'schemaLinkedProperty':
+                # This is a linked property type
+                results['linked_properties'].append(
+                    LinkedModelProperty.from_dict(r))
             else:
                 # This is a model
                 r['schema'] = self.get_properties(dataset, r['id'])
+                r['linked'] = self.get_linked_properties(dataset, r['id'])
                 results['models'].append(Model.from_dict(r, api=self.session))
         return results
 
@@ -363,6 +412,43 @@ class RecordsAPI(ModelsAPIBase):
                     dataset_id   = dataset_id,
                     concept_type = concept_type,
                     instance_id  = instance_id))
+
+    def get_linked_values(self, dataset, concept, instance):
+        dataset_id = self._get_id(dataset)
+        concept_id = self._get_id(concept)
+        instance_id = self._get_id(instance)
+        resp = self._get(self._uri('/{dataset_id}/concepts/{id}/instances/{instance_id}/linked', dataset_id=dataset_id, id=concept_id, instance_id=instance_id))
+        values = []
+        for r in resp:
+            link_type = concept.get_linked_property(r["schemaLinkedPropertyId"])
+            target = concept._api.concepts.get(dataset, link_type.target)
+            values.append(LinkedModelValue.from_dict(r, source_model=concept,
+                target_model=target, link_type=link_type))
+        return values
+
+    def create_link(self, dataset, concept, instance, payload):
+        dataset_id = self._get_id(dataset)
+        concept_id = self._get_id(concept)
+        instance_id = self._get_id(instance)
+
+        # Delete any existing links of the given type:
+        for link in self.get_linked_values(dataset, concept, instance):
+            if link.type.id == payload['schemaLinkedPropertyId']:
+                self.remove_link(dataset, concept, instance, link)
+        
+        resp = self._post(self._uri('/{dataset_id}/concepts/{id}/instances/{instance_id}/linked', dataset_id=dataset_id, id=concept_id, instance_id=instance_id), json=payload)
+        link_type = concept.get_linked_property(resp["schemaLinkedPropertyId"])
+        target = concept._api.concepts.get(dataset, link_type.target)
+        return LinkedModelValue.from_dict(resp, source_model=concept,
+            target_model=target, link_type=link_type)
+
+    def remove_link(self, dataset, concept, instance, value):
+        dataset_id = self._get_id(dataset)
+        concept_id = self._get_id(concept)
+        instance_id = self._get_id(instance)
+        link_id = self._get_id(value)
+        self._del(self._uri('/{dataset_id}/concepts/{id}/instances/{instance_id}/linked/{link_id}', dataset_id=dataset_id, id=concept_id, instance_id=instance_id, link_id=link_id))
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Relationships
