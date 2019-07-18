@@ -12,6 +12,9 @@ Documentation at https://developer.blackfynn.io/python/
 - Adding and retrieving array model values
 - Propagating HTTPerror message back to the user
 
+### Added
+- Support for linked properties
+
 ### Changed
 - Deprecated the `set_type` method on model properties. You can set property types using `ModelProperty.type` directly.
 - Deprecated the `set_value` method on model values. You can now set property values using `ModelValue.value` directly.
