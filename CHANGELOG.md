@@ -10,7 +10,7 @@ Documentation at https://developer.blackfynn.io/python/
 
 ### Fixed
 - Adding and retrieving array model values
-- Propagating HTTPerror message back to the user
+- The body of HTTP errors is now shown to users
 
 ### Added
 - Support for linked properties
