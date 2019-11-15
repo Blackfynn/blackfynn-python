@@ -9,7 +9,7 @@ Documentation at <https://developer.blackfynn.io/python/>
 ## 3.0.2
 
 ### Fixed
-- Upload on windows with the Agent
+- Uploading on Windows and Cygwin with the Agent
 
 ## 3.0.1
 
