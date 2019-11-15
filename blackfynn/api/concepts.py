@@ -70,7 +70,7 @@ class ModelsAPI(ModelsAPIBase):
         concept_id = self._get_id(concept)
         resp = self._get(self._uri('/{dataset_id}/concepts/{id}/properties', dataset_id=dataset_id, id=concept_id))
         return [ModelProperty.from_dict(r) for r in resp]
-    
+
     def get_linked_properties(self, dataset, concept):
         dataset_id = self._get_id(dataset)
         concept_id = self._get_id(concept)
@@ -156,7 +156,7 @@ class ModelsAPI(ModelsAPIBase):
                 else:
                     raise
         return Model.from_dict(r, api=self.session)
-    
+
     def create_linked_property(self, dataset, concept, prop):
         dataset_id = self._get_id(dataset)
         concept_id = self._get_id(concept)
@@ -435,7 +435,7 @@ class RecordsAPI(ModelsAPIBase):
         for link in self.get_linked_values(dataset, concept, instance):
             if link.type.id == payload['schemaLinkedPropertyId']:
                 self.remove_link(dataset, concept, instance, link)
-        
+
         resp = self._post(self._uri('/{dataset_id}/concepts/{id}/instances/{instance_id}/linked', dataset_id=dataset_id, id=concept_id, instance_id=instance_id), json=payload)
         link_type = concept.get_linked_property(resp["schemaLinkedPropertyId"])
         target = concept._api.concepts.get(dataset, link_type.target)
@@ -565,18 +565,6 @@ class ModelProxiesAPI(ModelsAPIBase):
 
     def __init__(self, session):
         super(ModelProxiesAPI, self).__init__(session)
-
-    def get_all(self, dataset, proxy_type):
-        dataset_id = self._get_id(dataset)
-        r = self._get(self._uri('/{dataset_id}/proxy/{p_type}/instances', dataset_id=dataset_id, p_type=proxy_type))
-        r['dataset_id'] = r.get('dataset_id', dataset_id)
-        return r
-
-    def get(self, dataset, proxy_type, proxy_id):
-        dataset_id = self._get_id(dataset)
-        r = self._get(self._uri('/{dataset_id}/proxy/{p_type}/instances/{p_id}', dataset_id=dataset_id, p_type=proxy_type, p_id=proxy_id))
-        r['dataset_id'] = r.get('dataset_id', dataset_id)
-        return r
 
     def create(self, dataset, external_id, relationship, concept_instance, values, direction = "ToTarget", proxy_type = "package", concept = None):
         assert proxy_type in self.proxy_types, "proxy_type must be one of {}".format(self.proxy_types)
