@@ -72,6 +72,8 @@ def agent_env(settings):
         'BLACKFYNN_API_TOKEN': settings.api_token,
         'BLACKFYNN_API_SECRET': settings.api_secret,
     }
+    if sys.platform == 'win32':
+        env.update({'SYSTEMROOT': os.getenv('SYSTEMROOT')})
     if 'BLACKFYNN_LOG_LEVEL' in os.environ:
         env['BLACKFYNN_LOG_LEVEL'] = os.environ.get('BLACKFYNN_LOG_LEVEL')
 
@@ -93,6 +95,7 @@ class AgentListener(object):
     def __enter__(self):
         check_port(self.port)
         command = [agent_cmd(), 'upload-status', '--listen', '--port', str(self.port)]
+
 
         self.devnull = open(os.devnull, 'w')
         self.proc = subprocess.Popen(command, env=agent_env(self.settings),
