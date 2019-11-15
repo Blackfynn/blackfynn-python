@@ -74,6 +74,9 @@ def agent_env(settings):
     }
     if sys.platform in ['win32', 'cygwin']:
         env['SYSTEMROOT'] = os.getenv('SYSTEMROOT')
+     # On Windows, the SYSTEMROOT environment variable must be preserved for DLLs to correctly load.
+     # ref: https://travis-ci.community/t/socket-the-requested-service-provider-could-not-be-loaded-or-initialized/1127
+
     if 'BLACKFYNN_LOG_LEVEL' in os.environ:
         env['BLACKFYNN_LOG_LEVEL'] = os.environ.get('BLACKFYNN_LOG_LEVEL')
 
