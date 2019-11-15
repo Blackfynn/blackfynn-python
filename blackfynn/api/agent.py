@@ -96,7 +96,6 @@ class AgentListener(object):
         check_port(self.port)
         command = [agent_cmd(), 'upload-status', '--listen', '--port', str(self.port)]
 
-
         self.devnull = open(os.devnull, 'w')
         self.proc = subprocess.Popen(command, env=agent_env(self.settings),
                                      stdout=self.devnull, stderr=self.devnull)
