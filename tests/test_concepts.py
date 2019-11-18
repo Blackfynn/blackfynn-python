@@ -465,7 +465,7 @@ def test_related_records_pagination(dataset):
     # Get all records
     gotten = patient1.get_related()
     assert len(gotten) == 200
-    assert [r.get("field") for r in gotten] == list(map(str, range(200)))
+    assert list(sorted([r.get("field") for r in gotten], key=lambda r: int(r))) == list(map(str, range(200)))
 
 
 def test_get_topology(simple_graph):

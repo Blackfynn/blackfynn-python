@@ -141,10 +141,10 @@ class ModelsAPI(ModelsAPIBase):
         r = self._post(self._uri('/{dataset_id}/concepts', dataset_id=dataset_id), json=concept.as_dict())
         concept.id = r['id']
         r['dataset_id'] = r.get('dataset_id', dataset_id)
-
         if concept.schema:
             try:
-                r['schema'] = self.update_properties(dataset, concept)
+                d = self.update_properties(dataset, concept)
+                r['schema'] = d
             except requests.exceptions.HTTPError as e:
                 if e.response.status_code == 400:
                     self._logger.error(

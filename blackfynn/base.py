@@ -57,7 +57,7 @@ class BlackfynnRequest(object):
             resp.data = resp.text
 
     def call(self, timeout=None):
-        self._response = self._func(self._uri, *self._args, timeout=timeout, **self._kwargs)
+        self._response = self._func(self._uri, *self._args, timeout=timeout, verify=False, **self._kwargs)
         self._handle_response(self._response)
         return self._response
 
