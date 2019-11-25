@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at <https://developer.blackfynn.io/python/>
 
+## 3.0.5
+
+###Added
+- Function get_summary() for datasets which provide info about a single dataset
+
 ## 3.0.4
 
 ### Fixed
