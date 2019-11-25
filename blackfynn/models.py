@@ -1942,7 +1942,7 @@ class Dataset(BaseCollection):
         data['owner'] = [elt for elt in data['collaborators'] if elt["role"] == "owner"]
         return json.dumps(data)
 
-def models(self):
+    def models(self):
         """
         Returns:
             List of models defined in Dataset
