@@ -38,6 +38,42 @@ class DatasetsAPI(APIBase):
         resp = self._get( self._uri('/{id}', id=id))
         return Dataset.from_dict(resp, api=self.session)
 
+    def published(self,ds):
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}/published', id=id))
+        return resp
+
+    def get_doi(self,ds):
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}/doi', id=id))
+        return resp
+
+    def get_storage(self, ds):
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}', id=id))
+        if "storage" in resp.keys():
+            return resp["storage"]
+        else:
+            return 0
+
+    def get_files_count(self,ds):
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}/packageTypeCounts', id=id))
+        file_count = 0
+        for key, value in resp.items():
+            file_count += value
+        return file_count
+
+    def get_collab_teams(self,ds):
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}/collaborators/teams', id=id))
+        return resp
+
+    def get_collab_users(self,ds):
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}/collaborators/users', id=id))
+        return resp
+
     def get_by_name_or_id(self, name_or_id):
         """
         Get Dataset by name or ID.

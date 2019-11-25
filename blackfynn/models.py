@@ -1929,7 +1929,20 @@ class Dataset(BaseCollection):
         """ Returns summary metrics about the knowledge graph """
         return self._api.concepts.get_summary(self)
 
-    def models(self):
+    def get_summary(self):
+        data = {}
+        published=self._api.datasets.published(self.id)
+        if published['status'] == 'PUBLISH_SUCCEEDED':
+            data['last_published_date'] = published['lastPublishedDate']
+            data['discover_id'] = published['publishedDatasetId']
+            data['latest_doi'] = self._api.datasets.get_doi(self.id)["doi"]
+        data['file_count'] = self._api.datasets.get_files_count(self.id)
+        data['total_size'] = self._api.datasets.get_storage(self.id)
+        data['collaborators'] = self._api.datasets.get_collab_teams(self.id) + self._api.datasets.get_collab_users(self.id)
+        data['owner'] = [elt for elt in data['collaborators'] if elt["role"] == "owner"]
+        return json.dumps(data)
+
+def models(self):
         """
         Returns:
             List of models defined in Dataset
