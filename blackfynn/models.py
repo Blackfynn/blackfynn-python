@@ -1934,10 +1934,10 @@ class Dataset(BaseCollection):
     def get_package_type_count(self):
         return self._api.datasets.get_package_type_count(self.id)
 
-    def get_collab_teams(self):
+    def get_collaborator_teams(self):
         return self._api.datasets.get_collab_teams(self.id)
 
-    def get_collab_users(self):
+    def get_collaborator_users(self):
         return self._api.datasets.get_collab_users(self.id)
 
     def get_owner(self):
