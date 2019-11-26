@@ -19,7 +19,10 @@ from blackfynn.models import (
     Tabular,
     TabularSchema,
     TabularSchemaColumn,
-    User
+    User,
+    PublishInfo,
+    UserCollaborator,
+    TeamCollaborator,
 )
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,22 +44,11 @@ class DatasetsAPI(APIBase):
     def published(self,ds):
         id = self._get_id(ds)
         resp = self._get( self._uri('/{id}/published', id=id))
-        return resp
+        if resp['status'] == 'PUBLISH_SUCCEEDED':
+            resp['latest_doi'] = self._get( self._uri('/{id}/doi', id=id))["doi"]
+        return PublishInfo.from_dict(resp)
 
-    def get_doi(self,ds):
-        id = self._get_id(ds)
-        resp = self._get( self._uri('/{id}/doi', id=id))
-        return resp
-
-    def get_storage(self, ds):
-        id = self._get_id(ds)
-        resp = self._get( self._uri('/{id}', id=id))
-        if "storage" in resp.keys():
-            return resp["storage"]
-        else:
-            return 0
-
-    def get_files_count(self,ds):
+    def get_package_type_count(self,ds):
         id = self._get_id(ds)
         resp = self._get( self._uri('/{id}/packageTypeCounts', id=id))
         file_count = 0
@@ -67,12 +59,18 @@ class DatasetsAPI(APIBase):
     def get_collab_teams(self,ds):
         id = self._get_id(ds)
         resp = self._get( self._uri('/{id}/collaborators/teams', id=id))
-        return resp
+        return [TeamCollaborator.from_dict(t) for t in resp]
 
     def get_collab_users(self,ds):
         id = self._get_id(ds)
         resp = self._get( self._uri('/{id}/collaborators/users', id=id))
-        return resp
+        return [UserCollaborator.from_dict(u) for u in resp]
+
+    def get_owner(self, ds):
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}/collaborators/users', id=id))
+        owner = [elt for elt in resp if elt["role"] == "owner"]
+        return [UserCollaborator.from_dict(elt) for elt in owner]
 
     def get_by_name_or_id(self, name_or_id):
         """

@@ -242,7 +242,6 @@ class BaseNode(object):
         if api is not None:
             item._api = api
             item._api.core.set_local(item)
-
         return item
 
     def __eq__(self, item):
@@ -471,7 +470,6 @@ class BaseDataNode(BaseNode):
     @classmethod
     def from_dict(cls, data, *args, **kwargs):
         item = super(BaseDataNode,cls).from_dict(data, *args, **kwargs)
-
         try:
             item.state = data['content']['state']
         except:
@@ -508,7 +506,6 @@ class BaseDataNode(BaseNode):
                     for prop_entry in entry['properties']:
                         prop = Property.from_dict(prop_entry, category=category)
                         cls_add_property(prop)
-
         return item
 
 
@@ -726,6 +723,9 @@ class BaseCollection(BaseDataNode):
     @classmethod
     def from_dict(cls, data, *args, **kwargs):
         item = super(BaseCollection, cls).from_dict(data, *args, **kwargs)
+
+        if 'storage' in data:
+            item.storage = data['storage']
         children = []
         if 'children' in data:
             for child in data['children']:
@@ -734,7 +734,6 @@ class BaseCollection(BaseDataNode):
                 pkg = pkg_cls.from_dict(child, *args, **kwargs)
                 children.append(pkg)
         item.add(*children)
-
         return item
 
     @as_native_str()
@@ -1929,18 +1928,20 @@ class Dataset(BaseCollection):
         """ Returns summary metrics about the knowledge graph """
         return self._api.concepts.get_summary(self)
 
-    def get_summary(self):
-        data = {}
-        published=self._api.datasets.published(self.id)
-        if published['status'] == 'PUBLISH_SUCCEEDED':
-            data['last_published_date'] = published['lastPublishedDate']
-            data['discover_id'] = published['publishedDatasetId']
-            data['latest_doi'] = self._api.datasets.get_doi(self.id)["doi"]
-        data['file_count'] = self._api.datasets.get_files_count(self.id)
-        data['total_size'] = self._api.datasets.get_storage(self.id)
-        data['collaborators'] = self._api.datasets.get_collab_teams(self.id) + self._api.datasets.get_collab_users(self.id)
-        data['owner'] = [elt for elt in data['collaborators'] if elt["role"] == "owner"]
-        return json.dumps(data)
+    def get_publish_info(self):
+        return self._api.datasets.published(self.id)
+
+    def get_package_type_count(self):
+        return self._api.datasets.get_package_type_count(self.id)
+
+    def get_collab_teams(self):
+        return self._api.datasets.get_collab_teams(self.id)
+
+    def get_collab_users(self):
+        return self._api.datasets.get_collab_users(self.id)
+
+    def get_owner(self):
+        return self._api.datasets.get_owner(self.id)
 
     def models(self):
         """
@@ -2138,6 +2139,83 @@ class Collection(BaseCollection):
     @as_native_str()
     def __repr__(self):
         return u"<Collection name='{}' id='{}'>".format(self.name, self.id)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# PublishInfo
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class PublishInfo(object):
+
+    def __init__(self, status, latest_doi, sourceOrganizationId, sourceDatasetId, publishedDatasetId, publishedVersionCount, lastPublishedDate):
+        self.status = status
+        self.latest_doi = latest_doi
+        self.sourceOrganizationId = sourceOrganizationId
+        self.sourceDatasetId = sourceDatasetId
+        self.publishedDatasetId = publishedDatasetId
+        self.publishedVersionCount = publishedVersionCount
+        self.lastPublishedDate = lastPublishedDate
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            status = data.get('status'),
+            latest_doi = data.get('latest_doi'),
+            sourceOrganizationId = data.get('sourceOrganizationId'),
+            sourceDatasetId = data.get('sourceDatasetId'),
+            publishedDatasetId = data.get('publishedDatasetId'),
+            publishedVersionCount = data.get('publishedVersionCount'),
+            lastPublishedDate = data.get('lastPublishedDate')
+        )
+
+    @as_native_str()
+    def __repr__(self):
+        return u"<PublishedInfo status='{}' sourceDatasetId='{}' sourceOrganizationId='{}' publishedDatasetId='{}' publishedVersionCount='{}' lastPublishedDate='{}' latest_doi='{}'>".format(self.status, self.sourceDatasetId, self.sourceOrganizationId, self.publishedDatasetId, self.publishedVersionCount, self.lastPublishedDate, self.latest_doi)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Collaborators
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class UserCollaborator(object):
+
+    def __init__(self, id, firstName, lastName, email, role):
+        self.id = id
+        self.firstName = firstName
+        self.lastName = lastName
+        self.email = email
+        self.role = role
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            id = data['id'],
+            firstName = data['firstName'],
+            lastName = data['lastName'],
+            email = data['email'],
+            role = data['role'],
+        )
+
+    @as_native_str()
+    def __repr__(self):
+        return u"<UserCollaborator id='{}' firstName='{}' lastName='{}' email='{}' role='{}'>".format(self.id, self.firstName, self.lastName, self.email, self.role)
+
+class TeamCollaborator(object):
+
+    def __init__(self, id, name, role):
+        self.id = id
+        self.name = name
+        self.role = role
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            id = data['id'],
+            name = data['name'],
+            role = data['role']
+        )
+
+    @as_native_str()
+    def __repr__(self):
+        return u"<TeamCollaborator id='{}' name='{}' role='{}'>".format(self.id, self.name, self.role)
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
