@@ -724,8 +724,7 @@ class BaseCollection(BaseDataNode):
     def from_dict(cls, data, *args, **kwargs):
         item = super(BaseCollection, cls).from_dict(data, *args, **kwargs)
 
-        if 'storage' in data:
-            item.storage = data['storage']
+        item.storage = data.get('storage', 0)
         children = []
         if 'children' in data:
             for child in data['children']:
@@ -1928,20 +1927,20 @@ class Dataset(BaseCollection):
         """ Returns summary metrics about the knowledge graph """
         return self._api.concepts.get_summary(self)
 
-    def get_publish_info(self):
+    def publish_info(self):
         return self._api.datasets.published(self.id)
 
-    def get_package_type_count(self):
-        return self._api.datasets.get_package_type_count(self.id)
+    def package_count(self):
+        return self._api.datasets.package_count(self.id)
 
-    def get_collaborator_teams(self):
-        return self._api.datasets.get_collab_teams(self.id)
+    def collaborator_teams(self):
+        return self._api.datasets.collaborator_teams(self.id)
 
-    def get_collaborator_users(self):
-        return self._api.datasets.get_collab_users(self.id)
+    def collaborator_users(self):
+        return self._api.datasets.collaborator_users(self.id)
 
-    def get_owner(self):
-        return self._api.datasets.get_owner(self.id)
+    def owner(self):
+        return self._api.datasets.owner(self.id)
 
     def models(self):
         """
@@ -2144,27 +2143,24 @@ class Collection(BaseCollection):
 # PublishInfo
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class PublishInfo(object):
+class PublishInfo(BaseNode):
 
-    def __init__(self, status, latest_doi, sourceOrganizationId, sourceDatasetId, publishedDatasetId, publishedVersionCount, lastPublishedDate):
+    def __init__(self, status, doi, published_dataset_id, published_version_count, last_published):
         self.status = status
-        self.latest_doi = latest_doi
-        self.sourceOrganizationId = sourceOrganizationId
-        self.sourceDatasetId = sourceDatasetId
-        self.publishedDatasetId = publishedDatasetId
-        self.publishedVersionCount = publishedVersionCount
-        self.lastPublishedDate = lastPublishedDate
+        self.doi = doi
+
+        self.published_dataset_id = published_dataset_id
+        self.published_version_count = published_version_count
+        self.last_published = last_published
 
     @classmethod
     def from_dict(cls, data):
         return cls(
             status = data.get('status'),
-            latest_doi = data.get('latest_doi'),
-            sourceOrganizationId = data.get('sourceOrganizationId'),
-            sourceDatasetId = data.get('sourceDatasetId'),
-            publishedDatasetId = data.get('publishedDatasetId'),
-            publishedVersionCount = data.get('publishedVersionCount'),
-            lastPublishedDate = data.get('lastPublishedDate')
+            doi = data.get('latest_doi'),
+            published_dataset_id = data.get('publishedDatasetId'),
+            published_version_count = data.get('publishedVersionCount'),
+            last_published = data.get('lastPublishedDate')
         )
 
     @as_native_str()
@@ -2175,12 +2171,12 @@ class PublishInfo(object):
 # Collaborators
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class UserCollaborator(object):
+class UserCollaborator(BaseNode):
 
-    def __init__(self, id, firstName, lastName, email, role):
+    def __init__(self, id, first_name, last_name, email, role):
         self.id = id
-        self.firstName = firstName
-        self.lastName = lastName
+        self.first_name = first_name
+        self.last_name = last_name
         self.email = email
         self.role = role
 
@@ -2188,17 +2184,21 @@ class UserCollaborator(object):
     def from_dict(cls, data):
         return cls(
             id = data['id'],
-            firstName = data['firstName'],
-            lastName = data['lastName'],
+            first_name = data['firstName'],
+            last_name = data['lastName'],
             email = data['email'],
             role = data['role'],
         )
 
+    @property
+    def name(self):
+        return "{} {}".format(self.first_name, self.last_name)
+
     @as_native_str()
     def __repr__(self):
-        return u"<UserCollaborator id='{}' firstName='{}' lastName='{}' email='{}' role='{}'>".format(self.id, self.firstName, self.lastName, self.email, self.role)
+        return u"<UserCollaborator name='{}' email='{}' role='{}' id='{}'>".format(self.name, self.email, self.role, self.id)
 
-class TeamCollaborator(object):
+class TeamCollaborator(BaseNode):
 
     def __init__(self, id, name, role):
         self.id = id
@@ -2215,7 +2215,7 @@ class TeamCollaborator(object):
 
     @as_native_str()
     def __repr__(self):
-        return u"<TeamCollaborator id='{}' name='{}' role='{}'>".format(self.id, self.name, self.role)
+        return u"<TeamCollaborator name='{}' role='{}' id='{}'>".format(self.name, self.role, self.id)
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

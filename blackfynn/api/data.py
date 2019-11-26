@@ -48,7 +48,7 @@ class DatasetsAPI(APIBase):
             resp['latest_doi'] = self._get( self._uri('/{id}/doi', id=id))["doi"]
         return PublishInfo.from_dict(resp)
 
-    def get_package_type_count(self,ds):
+    def package_count(self,ds):
         id = self._get_id(ds)
         resp = self._get( self._uri('/{id}/packageTypeCounts', id=id))
         file_count = 0
@@ -56,21 +56,19 @@ class DatasetsAPI(APIBase):
             file_count += value
         return file_count
 
-    def get_collab_teams(self,ds):
+    def collaborator_teams(self,ds):
         id = self._get_id(ds)
         resp = self._get( self._uri('/{id}/collaborators/teams', id=id))
         return [TeamCollaborator.from_dict(t) for t in resp]
 
-    def get_collab_users(self,ds):
+    def collaborator_users(self,ds):
         id = self._get_id(ds)
         resp = self._get( self._uri('/{id}/collaborators/users', id=id))
         return [UserCollaborator.from_dict(u) for u in resp]
 
-    def get_owner(self, ds):
-        id = self._get_id(ds)
-        resp = self._get( self._uri('/{id}/collaborators/users', id=id))
-        owner = [elt for elt in resp if elt["role"] == "owner"]
-        return [UserCollaborator.from_dict(elt) for elt in owner]
+    def owner(self, ds):
+
+        return next(filter(lambda x: x.role == 'owner', self.collaborator_users(ds)))
 
     def get_by_name_or_id(self, name_or_id):
         """
