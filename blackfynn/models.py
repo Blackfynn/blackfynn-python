@@ -2165,7 +2165,7 @@ class PublishInfo(BaseNode):
 
     @as_native_str()
     def __repr__(self):
-        return u"<PublishedInfo status='{}' sourceDatasetId='{}' sourceOrganizationId='{}' publishedDatasetId='{}' publishedVersionCount='{}' lastPublishedDate='{}' latest_doi='{}'>".format(self.status, self.sourceDatasetId, self.sourceOrganizationId, self.publishedDatasetId, self.publishedVersionCount, self.lastPublishedDate, self.latest_doi)
+        return u"<PublishInfo status='{}' published_dataset_id='{}' published_version_count='{}' last_published='{}' doi='{}'>".format(self.status,  self.published_dataset_id, self.published_version_count, self.last_published, self.doi)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Collaborators
