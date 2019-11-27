@@ -2145,12 +2145,12 @@ class Collection(BaseCollection):
 
 class PublishInfo(BaseNode):
 
-    def __init__(self, status, doi, published_dataset_id, published_version_count, last_published):
+    def __init__(self, status, doi, dataset_id, version_count, last_published):
         self.status = status
         self.doi = doi
 
-        self.published_dataset_id = published_dataset_id
-        self.published_version_count = published_version_count
+        self.dataset_id = dataset_id
+        self.version_count = version_count
         self.last_published = last_published
 
     @classmethod
@@ -2158,14 +2158,14 @@ class PublishInfo(BaseNode):
         return cls(
             status = data.get('status'),
             doi = data.get('latest_doi'),
-            published_dataset_id = data.get('publishedDatasetId'),
-            published_version_count = data.get('publishedVersionCount'),
+            dataset_id = data.get('publishedDatasetId'),
+            version_count = data.get('publishedVersionCount'),
             last_published = data.get('lastPublishedDate')
         )
 
     @as_native_str()
     def __repr__(self):
-        return u"<PublishInfo status='{}' published_dataset_id='{}' published_version_count='{}' last_published='{}' doi='{}'>".format(self.status,  self.published_dataset_id, self.published_version_count, self.last_published, self.doi)
+        return u"<PublishInfo status='{}' dataset_id='{}' version_count='{}' last_published='{}' doi='{}'>".format(self.status,  self.dataset_id, self.version_count, self.last_published, self.doi)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Collaborators
