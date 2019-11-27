@@ -56,12 +56,12 @@ class DatasetsAPI(APIBase):
             file_count += value
         return file_count
 
-    def collaborator_teams(self,ds):
+    def team_collaborators(self,ds):
         id = self._get_id(ds)
         resp = self._get( self._uri('/{id}/collaborators/teams', id=id))
         return [TeamCollaborator.from_dict(t) for t in resp]
 
-    def collaborator_users(self,ds):
+    def user_collaborators(self,ds):
         id = self._get_id(ds)
         resp = self._get( self._uri('/{id}/collaborators/users', id=id))
         return [UserCollaborator.from_dict(u) for u in resp]

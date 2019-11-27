@@ -724,7 +724,7 @@ class BaseCollection(BaseDataNode):
     def from_dict(cls, data, *args, **kwargs):
         item = super(BaseCollection, cls).from_dict(data, *args, **kwargs)
 
-        item.storage = data.get('storage', 0)
+        item.storage = data.get('storage', None)
         children = []
         if 'children' in data:
             for child in data['children']:
@@ -1927,17 +1927,17 @@ class Dataset(BaseCollection):
         """ Returns summary metrics about the knowledge graph """
         return self._api.concepts.get_summary(self)
 
-    def publish_info(self):
+    def published(self):
         return self._api.datasets.published(self.id)
 
     def package_count(self):
         return self._api.datasets.package_count(self.id)
 
-    def collaborator_teams(self):
-        return self._api.datasets.collaborator_teams(self.id)
+    def team_collaborators(self):
+        return self._api.datasets.team_collaborators(self.id)
 
-    def collaborator_users(self):
-        return self._api.datasets.collaborator_users(self.id)
+    def user_collaborators(self):
+        return self._api.datasets.user_collaborators(self.id)
 
     def owner(self):
         return self._api.datasets.owner(self.id)

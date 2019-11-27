@@ -9,11 +9,11 @@ Documentation at <https://developer.blackfynn.io/python/>
 ## 3.1.0
 
 ###Added
-- Function get_publish_info() for Dataset, returns info about publication on the Discover platform
-- Function get_package_type_count() for Dataset, returns the total number of Packages
-- Function get_collaborator_teams(self) for Dataset, returns the list of teams that can access the dataset
-- Function get_collaborator_users(self) for Dataset, returns the list of users that can access the dataset
-- Function get_owner(self) for Dataset, returns the owner of the dataset
+- Function `published()` for Dataset, returns info about publication on the Discover platform
+- Function `package_count()` for Dataset, returns the total number of Packages
+- Function `team_collaborators()` for Dataset, returns the list of teams that can access the dataset
+- Function `user_collaborators()` for Dataset, returns the list of users that can access the dataset
+- Function `owner()` for Dataset, returns the owner of the dataset
 
 ## 3.0.4
 

@@ -126,7 +126,6 @@ def test_package_type_count(client,dataset):
     assert m == n + 2
 
 def test_publish_info(client,dataset):
-    print(dataset.items)
     publish_info = dataset.publish_info()
     assert publish_info.status =='NOT_PUBLISHED'
     assert publish_info.published_version_count == 0
