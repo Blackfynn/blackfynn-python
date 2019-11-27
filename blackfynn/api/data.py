@@ -68,7 +68,7 @@ class DatasetsAPI(APIBase):
 
     def owner(self, ds):
 
-        return next(iter(filter(lambda x: x.role == 'owner', self.collaborator_users(ds))))
+        return next(iter(filter(lambda x: x.role == 'owner', self.user_collaborators(ds))))
 
     def get_by_name_or_id(self, name_or_id):
         """

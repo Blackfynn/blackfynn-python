@@ -126,9 +126,9 @@ def test_package_type_count(client,dataset):
     assert m == n + 2
 
 def test_publish_info(client,dataset):
-    publish_info = dataset.publish_info()
+    publish_info = dataset.published()
     assert publish_info.status =='NOT_PUBLISHED'
-    assert publish_info.published_version_count == 0
+    assert publish_info.version_count == 0
     assert publish_info.last_published== None
     assert publish_info.doi == None
 
@@ -137,12 +137,12 @@ def test_owner(client,dataset):
     assert owner.email == client.profile.email
 
 def test_collaborator_user(client,dataset):
-    collaborators = dataset.collaborator_users()
+    collaborators = dataset.user_collaborators()
     assert len(collaborators) == 1
     assert collaborators[0].email == client.profile.email
 
 def test_collaborator_team(client,dataset):
-    collaborators = dataset.collaborator_teams()
+    collaborators = dataset.team_collaborators()
     assert len(collaborators) == 0
 
 def test_properties(client, dataset):
