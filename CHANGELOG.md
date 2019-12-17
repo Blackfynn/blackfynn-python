@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at <https://developer.blackfynn.io/python/>
 
+## 3.1.2
+
+### Fixed
+- Fixed another bug in the deserialization of boolean properties
+
 ## 3.1.1
 
 ### Fixed

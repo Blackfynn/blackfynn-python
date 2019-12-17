@@ -2346,7 +2346,7 @@ class ModelPropertyType(object):
         elif self.data_type == bool :
             if isinstance(value, bool):
                 return value
-            elif isinstance(value, str):
+            elif isinstance(value, str) or isinstance(value, unicode):
                 if value.lower() == 'false':
                     return False
                 elif value.lower() == 'true':
