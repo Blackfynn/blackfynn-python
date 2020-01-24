@@ -12,3 +12,4 @@ websocket-client>=0.50.0
 # CLI
 docopt>=0.6
 psutil>=5.4
+python-dateutil>=2.8.0
