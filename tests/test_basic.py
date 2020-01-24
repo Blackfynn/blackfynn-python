@@ -47,6 +47,13 @@ def test_dataset_status_log(client, dataset):
     assert dataset_status_log.entries[0].status.name == 'NO_STATUS'
     assert dataset_status_log.entries[0].status.display_name == 'No Status'
 
+def test_status_is_readonly(client, dataset):
+    try:
+        dataset.status = 'New Thing'
+        dataset.update()
+    except AttributeError as e:
+        assert str(e) == "Dataset.status is read-only."
+
 def test_datasets(client, dataset):
     ds_items = len(dataset)
 
