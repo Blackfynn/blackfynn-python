@@ -6,6 +6,8 @@ import requests
 
 from blackfynn import Blackfynn
 from blackfynn.base import UnauthorizedException
+from dateutil.parser import parse
+
 # client library
 from blackfynn.models import BaseNode, DataPackage, Dataset, File, PublishInfo, UserCollaborator, TeamCollaborator
 
@@ -42,7 +44,7 @@ def test_dataset_status_log(client, dataset):
     assert dataset_status_log.entries[0].user.node_id == client.profile.id
     assert dataset_status_log.entries[0].user.first_name == client.profile.first_name
     assert dataset_status_log.entries[0].user.last_name == client.profile.last_name
-    assert dataset_status_log.entries[0].updated_at == datetime.datetime.strptime(dataset.created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
+    assert dataset_status_log.entries[0].updated_at == parse(dataset.created_at)
     assert dataset_status_log.entries[0].status.id == 1
     assert dataset_status_log.entries[0].status.name == 'NO_STATUS'
     assert dataset_status_log.entries[0].status.display_name == 'No Status'

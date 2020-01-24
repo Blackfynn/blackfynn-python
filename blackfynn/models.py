@@ -12,6 +12,7 @@ import sys
 from uuid import uuid4
 
 import dateutil
+from dateutil.parser import parse
 import numpy as np
 import pandas as pd
 import pytz
@@ -2242,7 +2243,7 @@ class StatusLogEntry(BaseNode):
         return cls(
             user = UserStubDTO.from_dict(data.get('user')),
             status = DatasetStatusStub.from_dict(data.get('status')),
-            updated_at = datetime.datetime.strptime(data.get('updatedAt'), "%Y-%m-%dT%H:%M:%S.%fZ"),
+            updated_at = parse(data.get('updatedAt'))
         )
 
     @as_native_str()
