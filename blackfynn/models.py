@@ -2242,7 +2242,7 @@ class StatusLogEntry(BaseNode):
         return cls(
             user = UserStubDTO.from_dict(data.get('user')),
             status = DatasetStatusStub.from_dict(data.get('status')),
-            updated_at = data.get('updatedAt'),
+            updated_at = datetime.datetime.strptime(data.get('updatedAt'), "%Y-%m-%dT%H:%M:%S.%fZ"),
         )
 
     @as_native_str()

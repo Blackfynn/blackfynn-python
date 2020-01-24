@@ -42,17 +42,16 @@ def test_dataset_status_log(client, dataset):
     assert dataset_status_log.entries[0].user.node_id == client.profile.id
     assert dataset_status_log.entries[0].user.first_name == client.profile.first_name
     assert dataset_status_log.entries[0].user.last_name == client.profile.last_name
-    assert dataset_status_log.entries[0].updated_at == dataset.created_at
+    assert dataset_status_log.entries[0].updated_at == datetime.datetime.strptime(dataset.created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
     assert dataset_status_log.entries[0].status.id == 1
     assert dataset_status_log.entries[0].status.name == 'NO_STATUS'
     assert dataset_status_log.entries[0].status.display_name == 'No Status'
 
 def test_status_is_readonly(client, dataset):
-    try:
+    with pytest.raises(AttributeError) as excinfo:
         dataset.status = 'New Thing'
         dataset.update()
-    except AttributeError as e:
-        assert str(e) == "Dataset.status is read-only."
+    assert "Dataset.status is read-only." in str(excinfo.value)
 
 def test_datasets(client, dataset):
     ds_items = len(dataset)
