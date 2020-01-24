@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at <https://developer.blackfynn.io/python/>
 
+## 3.3.0
+
+### Added
+- Function `status_log` for Dataset, returns the status change log of the dataset
+
 ## 3.2.0
 
 ### Added
