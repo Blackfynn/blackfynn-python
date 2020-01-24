@@ -33,6 +33,20 @@ def test_update_dataset(client, dataset, session_id):
     assert ds2.name == ds_name
     assert ds2.owner_id == client.profile.id
 
+def test_dataset_status_log(client, dataset):
+    dataset_status_log = dataset.status_log()
+    assert dataset_status_log.limit == 25
+    assert dataset_status_log.offset == 0
+    assert dataset_status_log.total_count == 1
+    assert len(dataset_status_log.entries) == 1
+    assert dataset_status_log.entries[0].user.node_id == client.profile.id
+    assert dataset_status_log.entries[0].user.first_name == client.profile.first_name
+    assert dataset_status_log.entries[0].user.last_name == client.profile.last_name
+    assert dataset_status_log.entries[0].updated_at == dataset.created_at
+    assert dataset_status_log.entries[0].status.id == 1
+    assert dataset_status_log.entries[0].status.name == 'NO_STATUS'
+    assert dataset_status_log.entries[0].status.display_name == 'No Status'
+
 def test_datasets(client, dataset):
     ds_items = len(dataset)
 

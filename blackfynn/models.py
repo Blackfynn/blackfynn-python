@@ -1902,7 +1902,7 @@ class Dataset(BaseCollection):
         kwargs.pop('type', None)
         super(Dataset, self).__init__(name, "DataSet", **kwargs)
         self.description = description or ''
-        self.status = status
+        self._status = status
         self.automatically_process_packages = automatically_process_packages
 
         # remove things that do not apply (a bit hacky)
@@ -1912,6 +1912,15 @@ class Dataset(BaseCollection):
     @as_native_str()
     def __repr__(self):
         return u"<Dataset name='{}' id='{}'>".format(self.name, self.id)
+
+    @property
+    def status(self):
+        """Get the current status."""
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        raise AttributeError('Dataset.status is read-only.')
 
     def get_topology(self):
         """ Returns the set of Models and Relationships defined for the dataset
@@ -1929,6 +1938,9 @@ class Dataset(BaseCollection):
 
     def published(self):
         return self._api.datasets.published(self.id)
+
+    def status_log(self, limit = 25, offset = 0):
+        return self._api.datasets.status_log(self.id, limit, offset)
 
     def package_count(self):
         return self._api.datasets.package_count(self.id)
@@ -2119,7 +2131,7 @@ class Dataset(BaseCollection):
             name = self.name,
             description = self.description,
             automaticallyProcessPackages = self.automatically_process_packages,
-            properties = [p.as_dict() for p in self.properties]
+            properties = [p.as_dict() for p in self.properties],
         )
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2166,6 +2178,103 @@ class PublishInfo(BaseNode):
     @as_native_str()
     def __repr__(self):
         return u"<PublishInfo status='{}' dataset_id='{}' version_count='{}' last_published='{}' doi='{}'>".format(self.status,  self.dataset_id, self.version_count, self.last_published, self.doi)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# UserStubDTO
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class UserStubDTO(BaseNode):
+
+    def __init__(self, node_id, first_name, last_name):
+        self.node_id = node_id
+        self.first_name = first_name
+        self.last_name = last_name
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            node_id = data.get('nodeId'),
+            first_name = data.get('firstName'),
+            last_name = data.get('lastName'),
+        )
+
+    @as_native_str()
+    def __repr__(self):
+        return u"<User node_id='{}' first_name='{}' last_name='{}' >".format(self.node_id,  self.first_name, self.last_name)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# DatasetStatusStub
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class DatasetStatusStub(BaseNode):
+
+    def __init__(self, id, name, display_name):
+        self.id = id
+        self.name = name
+        self.display_name = display_name
+
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            id = data.get('id'),
+            name = data.get('name'),
+            display_name = data.get('displayName'),
+        )
+
+    @as_native_str()
+    def __repr__(self):
+        return u"<DatasetStatus id='{}' name='{}' display_name='{}'>".format(self.id, self.name, self.display_name)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# StatusLogEntry
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class StatusLogEntry(BaseNode):
+
+    def __init__(self, user, status, updated_at):
+        self.user = user
+        self.status = status
+        self.updated_at = updated_at
+
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            user = UserStubDTO.from_dict(data.get('user')),
+            status = DatasetStatusStub.from_dict(data.get('status')),
+            updated_at = data.get('updatedAt'),
+        )
+
+    @as_native_str()
+    def __repr__(self):
+        return u"<StatusLogEntry user='{}' status='{}' updated_at='{}' >".format(self.user,  self.status, self.updated_at)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# StatusLogResponse
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class StatusLogResponse(BaseNode):
+
+    def __init__(self, limit, offset, total_count, entries):
+        self.limit = limit
+        self.offset = offset
+
+        self.total_count = total_count
+        self.entries = entries
+
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            limit = data.get('limit'),
+            offset = data.get('offset'),
+            total_count = data.get('totalCount'),
+            entries = [StatusLogEntry.from_dict(e) for e in data.get('entries')]
+        )
+
+    @as_native_str()
+    def __repr__(self):
+        return u"<StatusLogResponse limit='{}' offset='{}' total_count='{}' entries='{}' >".format(self.limit,  self.offset, self.total_count, self.entries)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Collaborators

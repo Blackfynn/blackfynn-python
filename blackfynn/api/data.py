@@ -20,6 +20,8 @@ from blackfynn.models import (
     TabularSchema,
     TabularSchemaColumn,
     User,
+    StatusLogResponse,
+    StatusLogEntry,
     PublishInfo,
     UserCollaborator,
     TeamCollaborator,
@@ -55,6 +57,11 @@ class DatasetsAPI(APIBase):
         for key, value in resp.items():
             file_count += value
         return file_count
+
+    def status_log(self,ds,limit,offset):
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}/status-log?limit={limit}&offset={offset}', id=id, limit=limit, offset=offset))
+        return StatusLogResponse.from_dict(resp)
 
     def team_collaborators(self,ds):
         id = self._get_id(ds)

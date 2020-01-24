@@ -297,7 +297,7 @@ class Settings(object):
         if name is None:
             return
         if name not in self.profiles:
-            raise Exception('Invaid profile name')
+            raise Exception('Invalid profile name')
         else:
             self.__dict__.update(self.profiles[name])
             self.active_profile = name
