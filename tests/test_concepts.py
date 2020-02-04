@@ -463,7 +463,10 @@ def test_related_records_pagination(dataset):
     attends = dataset.create_relationship_type('attends', 'an attendance')
 
     patient1 = patient.create_record({"name": "Fred"})
-    visits = visit.create_records([{"field": str(i)} for i in range(200)])
+    visits = []
+    for i in range(200):
+        visits.append(visit.create_record({"field": str(i)}))
+
     patient1.relate_to(visits, attends)
 
     # Get all records
