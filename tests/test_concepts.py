@@ -181,9 +181,8 @@ def test_models(dataset):
 
     new_relationships = new_relationship.get_all()
 
+    nr_delete_three = new_relationship.relate(nc_one, nc_three)
 
-
-    nr_delete_three = new_relationship.relate(nc_one, nc_two)
     assert len(new_relationship.get_all()) == len(new_relationships) + 1
     nr_delete_three.delete()
     assert len(new_relationship.get_all()) == len(new_relationships)
@@ -472,7 +471,7 @@ def test_related_records_pagination(dataset):
     # Get all records
     gotten = patient1.get_related()
     assert len(gotten) == 200
-    assert [r.get("field") for r in gotten] == list(map(str, range(200)))
+    assert sorted([int(r.get("field")) for r in gotten]) == list(range(200))
 
 def test_stringified_boolean_values(dataset):
     ppatient = dataset.create_model(
