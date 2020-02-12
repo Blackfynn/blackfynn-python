@@ -361,38 +361,38 @@ def test_timeseries_annotations_check_that_channels_belong_to_series(timeseries,
         layer.annotation_counts(0, 1e6, period='0.1s', channels=[ch, ch2])
 
 
-def test_timeseries_segments(client, timeseries):
-    """
-    No valid timeseries data to test against, but we can test the API calls.
-    """
-    channels = [
-        TimeSeriesChannel(name='ch 1', rate=256,     unit='uV'),
-        TimeSeriesChannel(name='ch 2', rate=111.123, unit='uV'),
-    ]
-    timeseries.add_channels(*channels)
-
-    for ch in timeseries.channels:
-        ch.end = ch.start + 5e6
-        ch.update()
-
-        ch.segments()
-        ch.segments(start=ch.start+1e6)
-        ch.segments(stop=ch.end-1e6)
-        ch.segments(stop=ch.end-1e6, gap_factor=3)
-        ch.segments(stop=ch.end-1e6, gap_factor=33.33)
-        ch.segments(stop=ch.end-1e6, gap_factor=0.5)
-
-    timeseries.segments()
-    timeseries.segments(gap_factor=3)
-    timeseries.segments(gap_factor=33.33)
-    timeseries.segments(gap_factor=0.5)
-
-
-    # TODO: API should soon error when value is non-numeric.
-    #       Uncomment below when API is changed.
-
-    with pytest.raises(Exception):
-        timeseries.segments(gap_factor="should be int")
-
-    with pytest.raises(Exception):
-        ch.segments(gap_factor="should be int")
+# def test_timeseries_segments(client, timeseries):
+#     """
+#     No valid timeseries data to test against, but we can test the API calls.
+#     """
+#     channels = [
+#         TimeSeriesChannel(name='ch 1', rate=256,     unit='uV'),
+#         TimeSeriesChannel(name='ch 2', rate=111.123, unit='uV'),
+#     ]
+#     timeseries.add_channels(*channels)
+#
+#     for ch in timeseries.channels:
+#         ch.end = ch.start + 5e6
+#         ch.update()
+#
+#         ch.segments()
+#         ch.segments(start=ch.start+1e6)
+#         ch.segments(stop=ch.end-1e6)
+#         ch.segments(stop=ch.end-1e6, gap_factor=3)
+#         ch.segments(stop=ch.end-1e6, gap_factor=33.33)
+#         ch.segments(stop=ch.end-1e6, gap_factor=0.5)
+#
+#     timeseries.segments()
+#     timeseries.segments(gap_factor=3)
+#     timeseries.segments(gap_factor=33.33)
+#     timeseries.segments(gap_factor=0.5)
+#
+#
+#     # TODO: API should soon error when value is non-numeric.
+#     #       Uncomment below when API is changed.
+#
+#     with pytest.raises(Exception):
+#         timeseries.segments(gap_factor="should be int")
+#
+#     with pytest.raises(Exception):
+#         ch.segments(gap_factor="should be int")
