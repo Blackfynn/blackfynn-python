@@ -55,6 +55,17 @@ def test_status_is_readonly(client, dataset):
         dataset.update()
     assert "Dataset.status is read-only." in str(excinfo.value)
 
+def test_tags_is_list_of_strings_only(client, dataset):
+    with pytest.raises(AttributeError) as excinfo:
+        dataset.tags = 'New Thing'
+    assert "Dataset.tags should be a list of strings." in str(excinfo.value)
+    with pytest.raises(AttributeError) as excinfo:
+        dataset.tags = [1,2,3]
+    assert "Dataset.tags should be a list of strings." in str(excinfo.value)
+    dataset.tags = ["a","b","c"]
+    dataset.update()
+    assert dataset.tags == ["a","b","c"]
+    
 def test_datasets(client, dataset):
     ds_items = len(dataset)
 
