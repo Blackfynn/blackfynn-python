@@ -1904,7 +1904,7 @@ class Dataset(BaseCollection):
         super(Dataset, self).__init__(name, "DataSet", **kwargs)
         self.description = description or ''
         self._status = status
-        self._tags = tags
+        self._tags = tags or []
         self.automatically_process_packages = automatically_process_packages
 
         # remove things that do not apply (a bit hacky)
@@ -1931,7 +1931,7 @@ class Dataset(BaseCollection):
 
     @tags.setter
     def tags(self, value):
-        if bool(value) and isinstance(value, list) and all(isinstance(elem, str) for elem in value):
+        if isinstance(value, list) and all(isinstance(elem, string_types) for elem in value):
             self._tags = value
         else:
             raise AttributeError('Dataset.tags should be a list of strings.')

@@ -64,7 +64,8 @@ def test_tags_is_list_of_strings_only(client, dataset):
     assert "Dataset.tags should be a list of strings." in str(excinfo.value)
     dataset.tags = ["a","b","c"]
     dataset.update()
-    assert dataset.tags == ["a","b","c"]
+    dataset_from_platform = client.get_dataset(dataset.id)
+    assert dataset_from_platform.tags == ["a","b","c"]
     
 def test_datasets(client, dataset):
     ds_items = len(dataset)

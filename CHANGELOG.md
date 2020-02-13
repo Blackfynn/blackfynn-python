@@ -9,7 +9,7 @@ Documentation at <https://developer.blackfynn.io/python/>
 ## 3.4.0
 
 ### Added
-- Support for Dataset.Tags
+- Support for `Dataset.tags`
 
 ## 3.3.1
 
