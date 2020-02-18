@@ -45,9 +45,9 @@ def test_dataset_status_log(client, dataset):
     assert dataset_status_log.entries[0].user.first_name == client.profile.first_name
     assert dataset_status_log.entries[0].user.last_name == client.profile.last_name
     assert dataset_status_log.entries[0].updated_at == parse(dataset.created_at)
-    assert dataset_status_log.entries[0].status.id == 1
-    assert dataset_status_log.entries[0].status.name == 'NO_STATUS'
-    assert dataset_status_log.entries[0].status.display_name == 'No Status'
+    assert dataset_status_log.entries[0].status.id is not None
+    assert dataset_status_log.entries[0].status.name is not None
+    assert dataset_status_log.entries[0].status.display_name is not None
 
 def test_status_is_readonly(client, dataset):
     with pytest.raises(AttributeError) as excinfo:

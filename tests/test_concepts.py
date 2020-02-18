@@ -461,17 +461,15 @@ def test_related_records_pagination(dataset):
 
     attends = dataset.create_relationship_type('attends', 'an attendance')
 
-    patient1 = patient.create_record({"name": "Fred"})
-    visits = []
-    for i in range(200):
-        visits.append(visit.create_record({"field": str(i)}))
+    fred = patient.create_record({"name": "Fred"})
+    visits = visit.create_records([{"field": str(i)} for i in range(200)])
 
-    patient1.relate_to(visits, attends)
+    fred.relate_to(visits, attends)
 
     # Get all records
-    gotten = patient1.get_related()
+    gotten = fred.get_related()
     assert len(gotten) == 200
-    assert sorted([int(r.get("field")) for r in gotten]) == list(range(200))
+    assert [int(r.get("field")) for r in gotten] == list(range(200))
 
 def test_stringified_boolean_values(dataset):
     ppatient = dataset.create_model(
