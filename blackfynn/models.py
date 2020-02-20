@@ -1965,6 +1965,9 @@ class Dataset(BaseCollection):
     def user_collaborators(self):
         return self._api.datasets.user_collaborators(self.id)
 
+    def get_packages_by_filename(self, filename):
+        return self._api.datasets.get_packages_by_filename(self.id, filename)
+
     def owner(self):
         return self._api.datasets.owner(self.id)
 
@@ -2290,6 +2293,26 @@ class StatusLogResponse(BaseNode):
     @as_native_str()
     def __repr__(self):
         return u"<StatusLogResponse limit='{}' offset='{}' total_count='{}' entries='{}' >".format(self.limit,  self.offset, self.total_count, self.entries)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# PackagesResponse
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class PackagesResponse(BaseNode):
+
+    def __init__(self, packages):
+        self.packages = packages
+
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            packages = [DataPackage.from_dict(p) for p in data.get('packages')],
+        )
+
+    @as_native_str()
+    def __repr__(self):
+        return u"<PackagesResponse packages='{}' >".format(self.packages)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Collaborators

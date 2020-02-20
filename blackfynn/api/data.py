@@ -22,6 +22,7 @@ from blackfynn.models import (
     User,
     StatusLogResponse,
     StatusLogEntry,
+    PackagesResponse,
     PublishInfo,
     UserCollaborator,
     TeamCollaborator,
@@ -73,8 +74,13 @@ class DatasetsAPI(APIBase):
         resp = self._get( self._uri('/{id}/collaborators/users', id=id))
         return [UserCollaborator.from_dict(u) for u in resp]
 
-    def owner(self, ds):
+    def get_packages_by_filename(self,ds,filename):
+        id = self._get_id(ds)
+        resp = self._get( self._uri('/{id}/packages?filename={filename}', id=id, filename=filename))
+        print(resp)
+        return PackagesResponse.from_dict(resp)
 
+    def owner(self, ds):
         return next(iter(filter(lambda x: x.role == 'owner', self.user_collaborators(ds))))
 
     def get_by_name_or_id(self, name_or_id):
