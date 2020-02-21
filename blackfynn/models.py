@@ -13,12 +13,11 @@ from uuid import uuid4
 
 import dateutil
 from dateutil.parser import parse
-import numpy as np
-import pandas as pd
 import pytz
 import requests
 
 import blackfynn.log as log
+from blackfynn.extensions import require_extension, pandas as pd, numpy as np
 from blackfynn.utils import (
     get_data_type,
     infer_epoch,
@@ -2803,7 +2802,7 @@ class LinkedModelValue(BaseNode):
         self.target_record_id = target_record
         self.type = link_type
         self.id = id
-    
+
     @classmethod
     def from_dict(cls, data, source_model, target_model, link_type):
         return cls(
@@ -2813,10 +2812,10 @@ class LinkedModelValue(BaseNode):
             target_record=data["to"],
             link_type=link_type,
             id=data["id"])
-    
+
     def as_dict(self):
         return dict(
-            schemaLinkedPropertyId=self.type.id, 
+            schemaLinkedPropertyId=self.type.id,
             to=self.target_record_id)
 
     @property
@@ -2960,7 +2959,7 @@ class BaseModelNode(BaseNode):
     def add_linked_property(self, name, target_model, display_name=None):
         """
         Add a linked property to the model.
-        
+
         Args:
           name (str): Name of the property
           target_model (Model): Model that the property will link to
@@ -3033,7 +3032,7 @@ class BaseModelNode(BaseNode):
                     break
             else:
                 raise Exception("Property '{}' not found in model's schema.".format(property))
-                
+
         elif isinstance(prop, ModelProperty):
             prop_name = prop.name
             prop_id = prop.id
@@ -3703,7 +3702,7 @@ class Record(BaseRecord):
         link: the id or LinkedModelProperty object of the link type
         """
         model = self.model
-        
+
         if isinstance(target, Record):
             target = target.id
 
@@ -4159,6 +4158,7 @@ class BaseInstanceList(list):
 class RecordSet(BaseInstanceList):
     _accept_type = Model
 
+    @require_extension
     def as_dataframe(self, record_id_column_name=None):
         """
         Convert the list of ``Record`` objects to a pandas DataFrame
@@ -4194,6 +4194,7 @@ class RecordSet(BaseInstanceList):
 class RelationshipSet(BaseInstanceList):
     _accept_type = RelationshipType
 
+    @require_extension
     def as_dataframe(self):
         """
         Converts the list of ``Relationship`` objects to a pandas DataFrame

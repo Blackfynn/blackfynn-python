@@ -33,6 +33,9 @@ setup(
     package_dir={'blackfynn': 'blackfynn'},
     setup_requires=['cython'],
     install_requires = reqs,
+    extras_require={
+        "data":  ["numpy>=1.13", "pandas>=0.20"],
+    },
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4.0',
     entry_points = {
         'console_scripts': [

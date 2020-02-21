@@ -5,11 +5,11 @@ from future.utils import string_types
 import datetime
 import math
 
-import pandas as pd
 import requests
 
 import blackfynn.log as log
 from blackfynn.api.base import APIBase
+from blackfynn.extensions import require_extension, pandas as pd, numpy as np
 from blackfynn.models import (
     BaseDataNode,
     Collection,
@@ -315,11 +315,11 @@ class TabularAPI(APIBase):
 
         return self._get(path, params=params)
 
+    @require_extension
     def get_tabular_data_iter(self, package, offset, order_by, order_direction, chunk_size=10000):
         """
         Return iterator that yields chunk_size data each call
         """
-
         if chunk_size > 10000:
             raise ValueError('Chunk size must be less than 10000')
 
@@ -340,6 +340,7 @@ class TabularAPI(APIBase):
             if len(df) < chunk_size:
                 break
 
+    @require_extension
     def get_tabular_data(self, package, limit, offset, order_by, order_direction):
         """
         Get data for tabular package using iterator

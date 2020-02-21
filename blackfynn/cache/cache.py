@@ -12,10 +12,8 @@ from datetime import datetime
 from glob import glob
 from itertools import groupby
 
-import numpy as np
-import pandas as pd
-
 import blackfynn.log as log
+from blackfynn.extensions import require_extension, pandas as pd, numpy as np
 from blackfynn.models import DataPackage, TimeSeriesChannel
 # blackfynn-specific
 from blackfynn.utils import usecs_since_epoch, usecs_to_datetime
@@ -76,6 +74,7 @@ def compact_cache(cache, max_mb):
         current_mb = (cache.size/(1024.0*1024))
 
 
+@require_extension
 def create_segment(channel, series):
     segment = CacheSegment()
     segment.channelId = channel.id
@@ -84,6 +83,7 @@ def create_segment(channel, series):
     return segment
 
 
+@require_extension
 def read_segment(channel, bytes):
     segment = CacheSegment.FromString(bytes)
     index = pd.to_datetime(np.frombuffer(segment.index, np.int64))
@@ -251,6 +251,7 @@ class Cache(object):
             r = con.execute(q).fetchone()
             return None if r is None else bool(r[0])
 
+    @require_extension
     def get_page_data(self, channel, page):
         has_data = self.page_has_data(channel, page)
         if has_data is None:

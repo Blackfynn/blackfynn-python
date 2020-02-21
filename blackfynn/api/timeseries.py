@@ -11,14 +11,12 @@ import re
 
 from concurrent.futures import ThreadPoolExecutor
 from itertools import count, islice
-
-import numpy as np
-import pandas as pd
 import requests
 
 # blackfynn
 from blackfynn.api.base import APIBase
 from blackfynn.cache import get_cache
+from blackfynn.extensions import require_extension, pandas as pd, numpy as np
 from blackfynn.models import (
     File,
     TimeSeries,
@@ -61,8 +59,6 @@ def parse_timedelta(time):
     elif isinstance(time, (integer_types, float)):
         # assume already in microseconds
         return time
-
-vec_usecs_to_datetime = np.vectorize(usecs_to_datetime)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TimeSeries Request
@@ -126,7 +122,10 @@ class ChannelPage(object):
 
         return self.data
 
+    @require_extension
     def _load_data(self, data, datetime_index=True):
+        vec_usecs_to_datetime = np.vectorize(usecs_to_datetime)
+
         # handle data response
         times = np.array( [t[0] for t in data] )
         data  = np.array( [d[1] for d in data] )
@@ -174,6 +173,7 @@ class ChannelIterator(object):
         self.chunk  = None
         self.offset = usecs_to_datetime(self.start)
 
+    @require_extension
     def get_chunks(self):
         # page size may be more/less than requested data
 
@@ -218,7 +218,9 @@ class ChannelIterator(object):
         if not self.chunk_per_page:
             yield self._get_chunk()
 
+    @require_extension
     def _get_chunk(self):
+
         if self.offset >= self.stop_dt:
             # terminate sequence
             return None
@@ -349,8 +351,9 @@ class TimeSeriesAPI(APIBase):
     # Data
     # ~~~~~~~~~~~~~~~~~~~
 
+    @require_extension
     def get_ts_data_iter(self, ts, start, end, channels, chunk_size,
-                         use_cache,length=None):
+                         use_cache, length=None):
         """
         Iterator will be constructed based over timespan (start,end) or (start, start+seconds)
 
@@ -430,6 +433,7 @@ class TimeSeriesAPI(APIBase):
             data_map = {c.name: v for c,v in zip(channels,values) if v is not None}
             yield pd.DataFrame.from_dict(data_map)
 
+    @require_extension
     def get_ts_data(self, ts, start, end, length, channels, use_cache):
         """
         Retrieve data. Must specify end-time or length.
@@ -632,13 +636,14 @@ class TimeSeriesAPI(APIBase):
 
     def iter_annotations(self, ts, layer, window_size=10, channels=None):
         # window_size is seconds
+
         if not isinstance(ts, TimeSeries):
             raise Exception("Argument 'ts' must be TimeSeries.")
 
         # paginate annotations
         start_time, end_time = ts.limits()
         num_windows = (end_time-start_time)/(window_size*1e6)
-        for i in range(int(np.ceil(num_windows))):
+        for i in range(int(math.ceil(num_windows))):
             win_start = start_time + i* (window_size*1e6)
             win_end = win_start + window_size*1e6
             if win_end > end_time:
@@ -752,6 +757,7 @@ class TimeSeriesAPI(APIBase):
         resp = self._get(path, params=params)
         return resp
 
+    @require_extension
     def process_annotation_file(self,ts,file_path):
         """
         Processes the .bfannot file at file_path and adds to timeseries package
@@ -788,6 +794,7 @@ class TimeSeriesAPI(APIBase):
         except Exception as error:
             raise Exception("Error adding annotation file {}, {}".format(file_path, error))
 
+    @require_extension
     def write_annotation_file(self,ts,file_path,layer_names):
         """
         Writes all layers in ts to .bfannot (v1.0) file
