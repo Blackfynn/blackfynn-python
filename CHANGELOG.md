@@ -6,7 +6,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at <https://developer.blackfynn.io/python/>
 
-## 3.4.0
+## 3.5.0
+
+### Changed
+- Removed Numpy and Pandas dependencies from the main package installer. These dependencies are only used by the timeseries code, and can now be installed with `pip install blackfynn[data]`.
+- Made the `websocket-client` dependency only required if using the CLI Agent for uploads
+
+### Added
+- Support for Python 3.8
+
+### Removed
+- Support for Python 3.4
+
+## 3.5.0
 
 ### Added
 - Support for `Dataset.tags`
@@ -24,7 +36,7 @@ Documentation at <https://developer.blackfynn.io/python/>
 ## 3.2.0
 
 ### Added
-- Added possibility to specify model_service_host
+- Added an optional `model_service_host` argument to the `Blackfynn` client
 
 ## 3.1.2
 
