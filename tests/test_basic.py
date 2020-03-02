@@ -170,23 +170,6 @@ def test_owner(client,dataset):
     owner = dataset.owner()
     assert owner.email == client.profile.email
 
-def test_get_package_by_filename(client,dataset):
-    pkg = DataPackage('Some MRI', package_type='MRI')
-    assert not pkg.exists
-    # create
-    dataset.add(pkg)
-    assert pkg.exists
-    client.update(pkg)
-
-    pkg = DataPackage('Something else', package_type='TimeSeries')
-    assert not pkg.exists
-    dataset.add(pkg)
-    assert pkg.exists
-    client.update(pkg)
-
-    p = dataset.get_packages_by_filename("Some MRI")
-    assert len(p.packages) == 1
-
 def test_collaborator_user(client,dataset):
     collaborators = dataset.user_collaborators()
     assert len(collaborators) == 1
