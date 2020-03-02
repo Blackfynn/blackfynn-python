@@ -43,10 +43,15 @@ def test_get_by_filename(dataset, upload_args, n_files):
     """
     dataset.upload(*upload_args)
     dataset.update()
-    time.sleep(1)
+    for i in range(5):
+        pp = dataset.get_items_by_name("test-78f3ea50-b")
+        if (pp[0].state == 'READY'):
+            break
+        else:
+            time.sleep(0.5)
     p = dataset.get_packages_by_filename('test-78f3ea50-b')
-    assert(len(p.packages) == 1)
-    assert(p.packages[0].name == 'test-78f3ea50-b')
+    assert(len(p) == 1)
+    assert(p[0].name == 'test-78f3ea50-b')
 
 
 @pytest.mark.parametrize('upload_args,n_files', [
