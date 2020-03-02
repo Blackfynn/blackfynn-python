@@ -95,7 +95,6 @@ def test_datasets(client, dataset):
     with pytest.raises(Exception):
         client.create_dataset(dataset.name)
 
-
 def test_packages_create_delete(client, dataset):
 
     # init
