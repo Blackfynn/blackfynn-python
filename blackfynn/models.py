@@ -2302,7 +2302,6 @@ class PackagesResponse(BaseNode):
     def __init__(self, packages):
         self.packages = packages
 
-
     @classmethod
     def from_dict(cls, data):
         return cls(

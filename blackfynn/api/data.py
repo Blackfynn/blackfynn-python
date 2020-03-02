@@ -77,7 +77,6 @@ class DatasetsAPI(APIBase):
     def get_packages_by_filename(self,ds,filename):
         id = self._get_id(ds)
         resp = self._get( self._uri('/{id}/packages?filename={filename}', id=id, filename=filename))
-        print(resp)
         return PackagesResponse.from_dict(resp)
 
     def owner(self, ds):
