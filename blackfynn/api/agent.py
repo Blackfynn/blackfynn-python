@@ -11,12 +11,16 @@ from time import sleep
 
 import semver
 from future.utils import raise_from
-from websocket import create_connection
-
 from blackfynn.log import get_logger
 from blackfynn.models import Collection, Dataset, DataPackage
 
 logger = get_logger('blackfynn.agent')
+
+try:
+    from websocket import create_connection
+except ModuleNotFoundError:
+    logger.warn("websocket-client is not installed - uploading with the Agent will not work")
+
 
 MINIMUM_AGENT_VERSION = semver.parse_version_info("0.2.2")
 DEFAULT_LISTEN_PORT = 11235

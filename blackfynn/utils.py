@@ -5,8 +5,7 @@ from future.utils import string_types, integer_types
 
 import datetime
 
-import numpy as np
-import pandas as pd
+from blackfynn.extensions import require_extension, pandas as pd, numpy as np
 
 # data type helpers
 
@@ -106,7 +105,9 @@ def usecs_to_datetime(us):
 # Timeseries helpers
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+@require_extension
 def generate_data(size, func='walk', scale=5, periods=10):
+
     remainder = size%periods
     pattern_length = int(size/periods)
     if func=='walk':
@@ -122,7 +123,10 @@ def generate_data(size, func='walk', scale=5, periods=10):
         pattern = np.linspace(-scale,scale,pattern_length)
         return np.concatenate([np.repeat(pattern, periods),pattern[:remainder]])
 
+
+@require_extension
 def generate_dataframe(minutes=2, freq=100):
+
     start = datetime.datetime(2017, 1, 1, 0, 0)
     end   = start + datetime.timedelta(minutes=minutes)
 

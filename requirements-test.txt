@@ -2,4 +2,6 @@ pytest
 pytest-cov
 tox
 sphinx
+numpy>=1.13
+pandas>=0.20
 -e git+git://github.com/Blackfynn/sphinx_rtd_theme.git#egg=sphinx-rtd-theme
