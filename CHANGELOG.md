@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at <https://developer.blackfynn.io/python/>
 
+## 3.6.0
+
+### Added
+- Function `get_package_by_filename` for Dataset, returns any packages containing a file matching a `filename` for the current dataset
+
 ## 3.5.0
 
 ### Changed
