@@ -1964,6 +1964,9 @@ class Dataset(BaseCollection):
     def user_collaborators(self):
         return self._api.datasets.user_collaborators(self.id)
 
+    def get_packages_by_filename(self, filename):
+        return self._api.datasets.get_packages_by_filename(self.id, filename)
+
     def owner(self):
         return self._api.datasets.owner(self.id)
 

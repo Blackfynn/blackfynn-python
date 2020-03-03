@@ -1,5 +1,6 @@
 import uuid
 import pytest
+import time
 
 from pkg_resources import resource_filename
 
@@ -16,6 +17,7 @@ def _resource_path(fname):
 FILE1      = _resource_path('test-78f3ea50.txt')
 FILE2      = _resource_path('test-78f3ea50.csv')
 FILE3      = _resource_path('test-78f3ea50.png')
+FILE4      = _resource_path('test-78f3ea50-b.txt')
 FILE_EMPTY = _resource_path('test-78f3ea50.empty')
 FLAT_DIR   = _resource_path('flat_dir')
 NESTED_DIR = _resource_path('nested_dir')
@@ -29,6 +31,27 @@ def test_upload_legacy_to_dataset(dataset):
 
     # Check that we've added an item to the dataset root
     assert n + 1 == len(dataset.items)
+
+@pytest.mark.agent
+@pytest.mark.parametrize('upload_args,n_files', [
+    ([FILE4], 1),          # Single file
+])
+def test_get_by_filename(dataset, upload_args, n_files):
+    """
+    Note: ETL will fail since destination will likely be removed
+          before being processed.
+    """
+    dataset.upload(*upload_args)
+    dataset.update()
+    for i in range(5):
+        pp = dataset.get_items_by_name("test-78f3ea50-b")
+        if (pp[0].state == 'READY'):
+            break
+        else:
+            time.sleep(0.5)
+    p = dataset.get_packages_by_filename('test-78f3ea50-b')
+    assert(len(p) == 1)
+    assert(p[0].name == 'test-78f3ea50-b')
 
 
 @pytest.mark.parametrize('upload_args,n_files', [
@@ -94,7 +117,6 @@ def test_upload_to_dataset(dataset, upload_args, n_files):
     dataset.upload(*upload_args)
     dataset.update()
     assert len(dataset.items) == c + n_files
-
 
 @pytest.mark.parametrize('append_args,n_files', [
     ([FILE1], 1),          # Single file
