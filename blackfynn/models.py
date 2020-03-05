@@ -853,8 +853,8 @@ class DataPackage(BaseDataNode):
 
     @classmethod
     def from_dict(cls, data, *args, **kwargs):
+        data['content']['id'] = data['content']['nodeId']
         item = super(DataPackage, cls).from_dict(data, *args, **kwargs)
-
         # parse objects
         objects = data.get('objects', None)
         if objects is not None:
@@ -863,7 +863,6 @@ class DataPackage(BaseDataNode):
                     continue
                 odata = data['objects'][otype]
                 item.__dict__[otype] = [File.from_dict(x) for x in odata]
-
         return item
 
     @classmethod
