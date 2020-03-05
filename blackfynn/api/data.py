@@ -77,7 +77,7 @@ class DatasetsAPI(APIBase):
     def get_packages_by_filename(self,ds,filename):
         id = self._get_id(ds)
         resp = self._get( self._uri('/{id}/packages?filename={filename}', id=id, filename=filename))
-        return [DataPackage.from_dict(p) for p in resp.get('packages')]
+        return [DataPackage.from_dict(p, api=self.session) for p in resp.get('packages')]
 
     def owner(self, ds):
         return next(iter(filter(lambda x: x.role == 'owner', self.user_collaborators(ds))))
