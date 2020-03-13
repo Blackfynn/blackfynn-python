@@ -311,13 +311,15 @@ def test_timeseries_annotations_can_get_more_than_default_limit(timeseries):
         description="layer with many small annotations")
     timeseries.add_layer(layer)
 
+    annotations =[]
     for i in range(200):
-        annotation = TimeSeriesAnnotation(
+        annotations.append(TimeSeriesAnnotation(
             label='annotation_{}'.format(i),
             channel_ids=ch.id,
             start=i*1e4,
-            end=(i+1)*1e4)
-        layer.add_annotations(annotation)
+            end=(i+1)*1e4))
+
+    layer.add_annotations(annotations)
 
     # Should retrieve all annotations
     assert len(layer.annotations()) == 200
