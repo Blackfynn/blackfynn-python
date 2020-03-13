@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at <https://developer.blackfynn.io/python/>
 
+## 3.6.2
+
+### Fixed
+- Regression bugs on a timeseries tests
+
 ## 3.6.1
 
 ### Fixed

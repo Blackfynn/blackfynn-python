@@ -4,6 +4,7 @@ from builtins import dict, object
 
 import base64
 import json
+from ratelimit import limits, sleep_and_retry
 
 import requests
 from requests import Session
@@ -169,6 +170,8 @@ class ClientSession(object):
         self._logger.debug("headers = {}".format(self.session.headers))
         return BlackfynnRequest(func, uri, *args, **kwargs)
 
+    @sleep_and_retry
+    @limits(calls=20, period=1)
     def _call(self, method, endpoint, base='', reauthenticate=True, *args, **kwargs):
         if method == 'get':
             func = self.session.get
