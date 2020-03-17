@@ -469,7 +469,7 @@ def test_related_records_pagination(dataset):
     # Get all records
     gotten = fred.get_related()
     assert len(gotten) == 200
-    assert sorted([int(r.get("field")) for r in gotten]) == list(range(200))
+    assert [int(r.get("field")) for r in gotten] == list(range(200))
 
 def test_stringified_boolean_values(dataset):
     ppatient = dataset.create_model(
