@@ -153,7 +153,7 @@ class ClientSession(object):
                 max_retries=Retry(
                     total=self.settings.max_request_timeout_retries,
                     backoff_factor=.5,
-                    status_forcelist=[502, 503, 504] # Retriable errors (but not POSTs)
+                    status_forcelist=[500, 502, 503, 504]  # Retriable errors (but not POSTs)
                 )
             )
             self._session.mount('http://', adapter)

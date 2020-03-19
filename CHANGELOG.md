@@ -6,10 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at <https://developer.blackfynn.io/python/>
 
+## 3.6.2
+
+### Changed
+- The client will now retry all HTTP 500 errors except for `POST` requests. Previously the client only retried 502, 503 and 504 errors.
+
 ## 3.6.1
 
 ### Fixed
-- Changed construction of Package returned by `get_package_by_filename` to include the session.
+- Updated `get_package_by_filename` to return `Package` objects that can make requests to the platform
 
 ## 3.6.0
 

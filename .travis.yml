@@ -27,20 +27,13 @@ after_success: bash <(curl -s https://codecov.io/bash)
 
 jobs:
   include:
-    - stage: test
+    - stage: test Python 2.7
       python: 2.7
 
-    - stage: test
+    - stage: test Python 3.5
       python: 3.5
 
-    - stage: test
-      python: 3.6
-
-    - stage: test
-      python: 3.7
-      dist: xenial
-
-    - stage: test
+    - stage: test Python 3.8
       python: 3.8
       dist: xenial
 
