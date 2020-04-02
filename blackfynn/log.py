@@ -6,7 +6,7 @@ import os
 logging.basicConfig()
 
 
-def get_logger(name='blackfynn-python'):
+def get_logger(name="blackfynn-python"):
     """
     Returns a logger configured to be used throughout the
     blackfynn-python library
@@ -19,6 +19,6 @@ def get_logger(name='blackfynn-python'):
     """
 
     logger = logging.getLogger(name)
-    logger.setLevel(os.environ.get('BLACKFYNN_LOG_LEVEL', 'INFO'))
+    logger.setLevel(os.environ.get("BLACKFYNN_LOG_LEVEL", "INFO"))
 
     return logger

@@ -6,6 +6,7 @@ from blackfynn.models import get_package_class
 
 # urllib compatibility
 from future import standard_library
+
 standard_library.install_aliases()
 import urllib.parse
 
@@ -14,10 +15,11 @@ import urllib.parse
 # Base class
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 class APIBase(object):
     host = None
-    base_uri = ''
-    name = ''
+    base_uri = ""
+    name = ""
 
     def __init__(self, session):
         """
@@ -25,7 +27,7 @@ class APIBase(object):
         """
         # api session
         self.session = session
-        self._logger = log.get_logger('blackfynn.api')
+        self._logger = log.get_logger("blackfynn.api")
 
     def _get_id(self, thing):
         """
@@ -57,25 +59,33 @@ class APIBase(object):
         return pkg
 
     def _uri(self, url_str, **kwvars):
-        vals = {k:urllib.parse.quote(str(var)) for k,var in kwvars.items()}
+        vals = {k: urllib.parse.quote(str(var)) for k, var in kwvars.items()}
         return url_str.format(**vals)
 
     def _get(self, endpoint, base=None, host=None, *args, **kwargs):
         base = self.base_uri if base is None else base
-        host = self.host     if host is None else host
-        return self.session._call('get', endpoint, host=host, base=base, *args, **kwargs)
+        host = self.host if host is None else host
+        return self.session._call(
+            "get", endpoint, host=host, base=base, *args, **kwargs
+        )
 
     def _post(self, endpoint, base=None, host=None, *args, **kwargs):
         base = self.base_uri if base is None else base
-        host = self.host     if host is None else host
-        return self.session._call('post', endpoint, host=host, base=base, *args, **kwargs)
+        host = self.host if host is None else host
+        return self.session._call(
+            "post", endpoint, host=host, base=base, *args, **kwargs
+        )
 
     def _put(self, endpoint, base=None, host=None, *args, **kwargs):
         base = self.base_uri if base is None else base
-        host = self.host     if host is None else host
-        return self.session._call('put', endpoint, host=host, base=base, *args, **kwargs)
+        host = self.host if host is None else host
+        return self.session._call(
+            "put", endpoint, host=host, base=base, *args, **kwargs
+        )
 
     def _del(self, endpoint, base=None, host=None, *args, **kwargs):
         base = self.base_uri if base is None else base
-        host = self.host     if host is None else host
-        return self.session._call('delete', endpoint, host=host, base=base, *args, **kwargs)
+        host = self.host if host is None else host
+        return self.session._call(
+            "delete", endpoint, host=host, base=base, *args, **kwargs
+        )

@@ -7,7 +7,7 @@ from blackfynn.api.base import APIBase
 
 class UserAPI(APIBase):
     base_uri = "/user"
-    name = 'user'
+    name = "user"
 
     def switch_organization(self, orgId):
-        return self._put( self._uri('/organization/{orgId}/switch'.format(orgId=orgId)))
+        return self._put(self._uri("/organization/{orgId}/switch".format(orgId=orgId)))

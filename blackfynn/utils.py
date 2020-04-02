@@ -9,20 +9,21 @@ from blackfynn.extensions import require_extension, pandas as pd, numpy as np
 
 # data type helpers
 
+
 def value_as_type(value, dtype):
     try:
-        if dtype == 'string':
+        if dtype == "string":
             return str(value)
-        elif dtype == 'integer':
+        elif dtype == "integer":
             return int(value)
-        elif dtype == 'double':
+        elif dtype == "double":
             return float(value)
-        elif dtype == 'date':
+        elif dtype == "date":
             return infer_epoch_msecs(value)
-        if dtype == 'boolean':
-            return value.lower()=='true'
+        if dtype == "boolean":
+            return value.lower() == "true"
     except:
-        raise Exception('Unable to set value={} as type {}'.format(value, dtype))
+        raise Exception("Unable to set value={} as type {}".format(value, dtype))
 
 
 def get_data_type(v):
@@ -46,12 +47,14 @@ def get_data_type(v):
         else:
             return ("string", str(v))
 
+
 def is_integer(s):
     try:
         int(s)
         return True
     except ValueError:
         return False
+
 
 def is_decimal(s):
     try:
@@ -60,7 +63,9 @@ def is_decimal(s):
     except ValueError:
         return False
 
+
 # time-series helpers
+
 
 def infer_epoch_msecs(thing):
     if isinstance(thing, datetime.datetime):
@@ -74,6 +79,7 @@ def infer_epoch_msecs(thing):
     else:
         raise Exception("Cannot parse date")
 
+
 def infer_epoch(thing):
     if isinstance(thing, datetime.datetime):
         return usecs_since_epoch(thing)
@@ -83,61 +89,75 @@ def infer_epoch(thing):
     else:
         raise Exception("Cannot parse date")
 
+
 def secs_since_epoch(the_time):
     the_time = the_time.replace(tzinfo=None)
     # seconds from epoch (float)
-    return (the_time-datetime.datetime.utcfromtimestamp(0)).total_seconds()
+    return (the_time - datetime.datetime.utcfromtimestamp(0)).total_seconds()
+
 
 def msecs_since_epoch(the_time):
     # milliseconds from epoch (integer)
-    return int(secs_since_epoch(the_time)*1000)
+    return int(secs_since_epoch(the_time) * 1000)
+
 
 def usecs_since_epoch(the_time):
     # microseconds from epoch (integer)
-    return int(secs_since_epoch(the_time)*1e6)
+    return int(secs_since_epoch(the_time) * 1e6)
+
 
 def usecs_to_datetime(us):
     # convert usecs since epoch to proper datetime object
-    return datetime.datetime.utcfromtimestamp(0) + datetime.timedelta(microseconds=int(us))
+    return datetime.datetime.utcfromtimestamp(0) + datetime.timedelta(
+        microseconds=int(us)
+    )
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Timeseries helpers
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-@require_extension
-def generate_data(size, func='walk', scale=5, periods=10):
 
-    remainder = size%periods
-    pattern_length = int(size/periods)
-    if func=='walk':
-        x = (np.random.rand(size)-0.5).cumsum()
+@require_extension
+def generate_data(size, func="walk", scale=5, periods=10):
+
+    remainder = size % periods
+    pattern_length = int(size / periods)
+    if func == "walk":
+        x = (np.random.rand(size) - 0.5).cumsum()
         # normalize to [-scale,scale]
-        return x/np.max([x.min(), x.max()])*scale
-    elif func=='sin':
-        return np.sin(np.linspace(0, np.pi*periods, size))*scale
-    elif func=='square':
-        pattern = np.concatenate([np.ones(pattern_length//2)*-1, np.ones(pattern_length//2)])
-        return np.concatenate([np.repeat(pattern, periods), pattern[:remainder]])*scale
-    elif func=='sawtooth':
-        pattern = np.linspace(-scale,scale,pattern_length)
-        return np.concatenate([np.repeat(pattern, periods),pattern[:remainder]])
+        return x / np.max([x.min(), x.max()]) * scale
+    elif func == "sin":
+        return np.sin(np.linspace(0, np.pi * periods, size)) * scale
+    elif func == "square":
+        pattern = np.concatenate(
+            [np.ones(pattern_length // 2) * -1, np.ones(pattern_length // 2)]
+        )
+        return (
+            np.concatenate([np.repeat(pattern, periods), pattern[:remainder]]) * scale
+        )
+    elif func == "sawtooth":
+        pattern = np.linspace(-scale, scale, pattern_length)
+        return np.concatenate([np.repeat(pattern, periods), pattern[:remainder]])
 
 
 @require_extension
 def generate_dataframe(minutes=2, freq=100):
 
     start = datetime.datetime(2017, 1, 1, 0, 0)
-    end   = start + datetime.timedelta(minutes=minutes)
+    end = start + datetime.timedelta(minutes=minutes)
 
     # index
-    ind = pd.date_range(start=start, end=end, freq='10000u', closed='left')
+    ind = pd.date_range(start=start, end=end, freq="10000u", closed="left")
     n = len(ind)
 
     # dataframe
-    return pd.DataFrame({
-        'random-walk': generate_data(n, func='walk'),
-        'sin': generate_data(n, func='sin'),
-        'sawtooth': generate_data(n, func='sawtooth'),
-        'square': generate_data(n, func='square')
-    }, index=ind)
+    return pd.DataFrame(
+        {
+            "random-walk": generate_data(n, func="walk"),
+            "sin": generate_data(n, func="sin"),
+            "sawtooth": generate_data(n, func="sawtooth"),
+            "square": generate_data(n, func="square"),
+        },
+        index=ind,
+    )

@@ -29,7 +29,7 @@ import blackfynn
 #
 # needs_sphinx = '1.0'
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(".."))
 
 release = version = blackfynn.__version__
 
@@ -37,12 +37,12 @@ release = version = blackfynn.__version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.viewcode',
-    'sphinx.ext.autosectionlabel',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.autosummary',
-    'recommonmark'
+    "sphinx.ext.viewcode",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autosummary",
+    "recommonmark",
 ]
 
 # template
@@ -50,25 +50,25 @@ napoleon_google_docstring = True
 napoleon_use_param = True
 napoleon_use_ivar = True
 
-autodoc_member_order = 'groupwise'
+autodoc_member_order = "groupwise"
 autosummary_generate = True
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['.templates']
+templates_path = [".templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = ['.rst', '.md']
-#source_suffix = '.rst'
+source_suffix = [".rst", ".md"]
+# source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = u'Blackfynn'
-copyright = u'Blackfynn, Inc.'
-author = u'support@blackfynn.com'
+project = u"Blackfynn"
+copyright = u"Blackfynn, Inc."
+author = u"support@blackfynn.com"
 
 show_sphinx = False
 show_copyright = False
@@ -90,20 +90,18 @@ language = None
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = [
-    'CONTRIBUTION_TEMPLATE.md',
-    'ISSUE_TEMPLATE.md',
-    'PULL_REQUEST_TEMPLATE.md'
+    "CONTRIBUTION_TEMPLATE.md",
+    "ISSUE_TEMPLATE.md",
+    "PULL_REQUEST_TEMPLATE.md",
 ]
 
 autosectionlabel_prefix_document = True
 
-suppress_warnings = [
-    'autosectionlabel.CHANGELOG'
-]
+suppress_warnings = ["autosectionlabel.CHANGELOG"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-#pygments_style = 'sphinx'
-pygments_style = 'monokai'
+# pygments_style = 'sphinx'
+pygments_style = "monokai"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -114,8 +112,8 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-#html_theme = 'alabaster'
-html_theme = 'sphinx_rtd_theme'
+# html_theme = 'alabaster'
+html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -126,13 +124,11 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['static']
-html_favicon = 'static/favicon-32x32.png'
-html_logo    = 'static/blackfynn-full-color-logo.svg'
+html_static_path = ["static"]
+html_favicon = "static/favicon-32x32.png"
+html_logo = "static/blackfynn-full-color-logo.svg"
 html_context = dict(
-    show_authors = False,
-    show_copyright = False,
-    logo = 'blackfynn-full-color-logo.svg'
+    show_authors=False, show_copyright=False, logo="blackfynn-full-color-logo.svg"
 )
 html_show_sourcelink = False
 
@@ -140,7 +136,7 @@ html_show_sourcelink = False
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Blackfynndoc'
+htmlhelp_basename = "Blackfynndoc"
 
 
 # -- Options for LaTeX output -----------------c----------------------------
@@ -149,15 +145,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -167,8 +160,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Blackfynn.tex', u'Blackfynn Documentation',
-     u'support@blackfynn.com', 'manual'),
+    (
+        master_doc,
+        "Blackfynn.tex",
+        u"Blackfynn Documentation",
+        u"support@blackfynn.com",
+        "manual",
+    ),
 ]
 
 
@@ -177,8 +175,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'blackfynn', u'Blackfynn Python Client Documentation',
-     [author], 1)
+    (master_doc, "blackfynn", u"Blackfynn Python Client Documentation", [author], 1)
 ]
 
 
@@ -188,7 +185,13 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Blackfynn', u'Blackfynn Python Client Documentation',
-     author, 'Blackfynn', 'Python client for accessing Blackfynn platform',
-     'Utilities'),
+    (
+        master_doc,
+        "Blackfynn",
+        u"Blackfynn Python Client Documentation",
+        author,
+        "Blackfynn",
+        "Python client for accessing Blackfynn platform",
+        "Utilities",
+    ),
 ]

@@ -9,19 +9,20 @@ from blackfynn.api.agent import AgentError
 
 
 def _resource_path(fname):
-    return resource_filename('tests.resources', fname)
+    return resource_filename("tests.resources", fname)
+
 
 # All test assets need to use this "test-78f3ea50" prefix so failures caused by
 # deleting datasets before processing all assests can be filtered out of
 # production error notifications.
-FILE1      = _resource_path('test-78f3ea50.txt')
-FILE2      = _resource_path('test-78f3ea50.csv')
-FILE3      = _resource_path('test-78f3ea50.png')
-FILE4      = _resource_path('test-78f3ea50-b.txt')
-FILE_EMPTY = _resource_path('test-78f3ea50.empty')
-FLAT_DIR   = _resource_path('flat_dir')
-NESTED_DIR = _resource_path('nested_dir')
-INNER_DIR  = 'inner_dir'
+FILE1 = _resource_path("test-78f3ea50.txt")
+FILE2 = _resource_path("test-78f3ea50.csv")
+FILE3 = _resource_path("test-78f3ea50.png")
+FILE4 = _resource_path("test-78f3ea50-b.txt")
+FILE_EMPTY = _resource_path("test-78f3ea50.empty")
+FLAT_DIR = _resource_path("flat_dir")
+NESTED_DIR = _resource_path("nested_dir")
+INNER_DIR = "inner_dir"
 
 
 def test_upload_legacy_to_dataset(dataset):
@@ -32,10 +33,9 @@ def test_upload_legacy_to_dataset(dataset):
     # Check that we've added an item to the dataset root
     assert n + 1 == len(dataset.items)
 
+
 @pytest.mark.agent
-@pytest.mark.parametrize('upload_args,n_files', [
-    ([FILE4], 1),          # Single file
-])
+@pytest.mark.parametrize("upload_args,n_files", [([FILE4], 1),])  # Single file
 def test_get_by_filename(dataset, upload_args, n_files):
     """
     Note: ETL will fail since destination will likely be removed
@@ -45,21 +45,22 @@ def test_get_by_filename(dataset, upload_args, n_files):
     dataset.update()
     for i in range(5):
         pp = dataset.get_items_by_name("test-78f3ea50-b")
-        if (pp[0].state == 'READY'):
+        if pp[0].state == "READY":
             break
         else:
             time.sleep(0.5)
-    packages = dataset.get_packages_by_filename('test-78f3ea50-b')
-    assert(len(packages) == 1)
-    assert(packages[0].name == 'test-78f3ea50-b')
+    packages = dataset.get_packages_by_filename("test-78f3ea50-b")
+    assert len(packages) == 1
+    assert packages[0].name == "test-78f3ea50-b"
     files = packages[0].files
     assert len(files) == 1
-    assert(files[0].name == 'test-78f3ea50-b')
+    assert files[0].name == "test-78f3ea50-b"
 
-@pytest.mark.parametrize('upload_args,n_files', [
-    ([FILE1], 1),               # Single file
-    ([[FILE1, FILE2]], 2),      # Multiple files
-])
+
+@pytest.mark.parametrize(
+    "upload_args,n_files",
+    [([FILE1], 1), ([[FILE1, FILE2]], 2),],  # Single file  # Multiple files
+)
 def test_upload_legacy_to_collection(dataset, upload_args, n_files):
     collection = dataset.create_collection(str(uuid.uuid4()))
     collection.upload(*upload_args, use_agent=False)
@@ -68,11 +69,10 @@ def test_upload_legacy_to_collection(dataset, upload_args, n_files):
 
 
 @pytest.mark.agent
-@pytest.mark.parametrize('upload_args, n_files', [
-    ([FLAT_DIR], 3),
-    ([NESTED_DIR], 1),
-    ([NESTED_DIR + '/' + INNER_DIR], 2),
-])
+@pytest.mark.parametrize(
+    "upload_args, n_files",
+    [([FLAT_DIR], 3), ([NESTED_DIR], 1), ([NESTED_DIR + "/" + INNER_DIR], 2),],
+)
 def test_upload_directory(dataset, upload_args, n_files):
     collection = dataset.create_collection(str(uuid.uuid4()))
     collection.upload(upload_args)
@@ -105,11 +105,14 @@ def test_upload_cannot_upload_multiple_directories(dataset):
 
 
 @pytest.mark.agent
-@pytest.mark.parametrize('upload_args,n_files', [
-    ([FILE1], 1),          # Single file
-    ([FILE1, FILE2], 2),   # Multiple files, separate arguments
-    ([[FILE1, FILE2]], 2), # Multiple files, single argument list
-])
+@pytest.mark.parametrize(
+    "upload_args,n_files",
+    [
+        ([FILE1], 1),  # Single file
+        ([FILE1, FILE2], 2),  # Multiple files, separate arguments
+        ([[FILE1, FILE2]], 2),  # Multiple files, single argument list
+    ],
+)
 def test_upload_to_dataset(dataset, upload_args, n_files):
     """
     Note: ETL will fail since destination will likely be removed
@@ -120,30 +123,37 @@ def test_upload_to_dataset(dataset, upload_args, n_files):
     dataset.update()
     assert len(dataset.items) == c + n_files
 
-@pytest.mark.parametrize('append_args,n_files', [
-    ([FILE1], 1),          # Single file
-    ([FILE1, FILE2], 2),   # Multiple files, separate arguments
-    ([[FILE1, FILE2]], 2), # Multiple files, single argument list
-])
+
+@pytest.mark.parametrize(
+    "append_args,n_files",
+    [
+        ([FILE1], 1),  # Single file
+        ([FILE1, FILE2], 2),  # Multiple files, separate arguments
+        ([[FILE1, FILE2]], 2),  # Multiple files, single argument list
+    ],
+)
 def test_append_legacy(dataset, append_args, n_files):
     # TimeSeries package to append into...
-    pkg = TimeSeries('Rando Timeseries')
+    pkg = TimeSeries("Rando Timeseries")
     dataset.add(pkg)
 
     resp = pkg.append_files(*append_args, use_agent=False)
     assert len(resp) == n_files
 
     for r in resp:
-        manifest = r[0]['manifest']
-        assert manifest['content'] is not None
-        assert manifest['type'] == 'append'
+        manifest = r[0]["manifest"]
+        assert manifest["content"] is not None
+        assert manifest["type"] == "append"
 
 
-@pytest.mark.parametrize('upload_args,n_files', [
-    ([FILE1], 1),          # Single file
-    ([FILE1, FILE2], 2),   # Multiple files, separate arguments
-    ([[FILE1, FILE2]], 2), # Multiple files, single argument list
-])
+@pytest.mark.parametrize(
+    "upload_args,n_files",
+    [
+        ([FILE1], 1),  # Single file
+        ([FILE1, FILE2], 2),  # Multiple files, separate arguments
+        ([[FILE1, FILE2]], 2),  # Multiple files, single argument list
+    ],
+)
 def test_upload_legacy(dataset, upload_args, n_files):
     """
     Note: ETL will fail since destination will likely be removed
@@ -153,9 +163,9 @@ def test_upload_legacy(dataset, upload_args, n_files):
     assert len(resp) == n_files
 
     for r in resp:
-        manifest = r[0]['manifest']
-        assert manifest['content'] is not None
-        assert manifest['type'] == 'upload'
+        manifest = r[0]["manifest"]
+        assert manifest["content"] is not None
+        assert manifest["type"] == "upload"
 
 
 def test_cannot_upload_directory_using_s3(dataset):
@@ -164,11 +174,14 @@ def test_cannot_upload_directory_using_s3(dataset):
 
 
 @pytest.mark.agent
-@pytest.mark.parametrize('append_args,n_files', [
-    ([FILE1], 1),          # Single file
-    ([FILE1, FILE2], 2),   # Multiple files, separate arguments
-    ([[FILE1, FILE2]], 2), # Multiple files, single argument list
-])
+@pytest.mark.parametrize(
+    "append_args,n_files",
+    [
+        ([FILE1], 1),  # Single file
+        ([FILE1, FILE2], 2),  # Multiple files, separate arguments
+        ([[FILE1, FILE2]], 2),  # Multiple files, single argument list
+    ],
+)
 def test_append(dataset, append_args, n_files):
     """
     Note: ETL will fail for append, because... it's a text file.
@@ -176,12 +189,12 @@ def test_append(dataset, append_args, n_files):
           before the ETL actually places the new node there.
     """
     # TimeSeries package to append into...
-    pkg = TimeSeries('Rando Timeseries')
+    pkg = TimeSeries("Rando Timeseries")
     dataset.add(pkg)
 
     # upload/append file into package
     pkg.append_files(*append_args)
-    #TODO: assert append was successful
+    # TODO: assert append was successful
 
 
 @pytest.mark.agent

@@ -23,13 +23,17 @@ def require_extension(f):
     All functions and methods that use `numpy` or `pandas` must be decorated
     with this.
     """
+
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         if pandas is None or numpy is None:
-            raise MissingDependency("""This command require additional dependencies. To install, run:
+            raise MissingDependency(
+                """This command require additional dependencies. To install, run:
 
 pip install blackfynn[data]
 
-""")
+"""
+            )
         return f(*args, **kwargs)
+
     return wrapper

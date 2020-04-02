@@ -32,55 +32,70 @@ from blackfynn.models import (
 # Dataset
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 class DatasetsAPI(APIBase):
     """
     Interface for managing datasets on the platform.
     """
-    base_uri='/datasets'
-    name = 'datasets'
+
+    base_uri = "/datasets"
+    name = "datasets"
 
     def get(self, ds):
         id = self._get_id(ds)
-        resp = self._get( self._uri('/{id}', id=id))
+        resp = self._get(self._uri("/{id}", id=id))
         return Dataset.from_dict(resp, api=self.session)
 
-    def published(self,ds):
+    def published(self, ds):
         id = self._get_id(ds)
-        resp = self._get( self._uri('/{id}/published', id=id))
-        if resp['status'] == 'PUBLISH_SUCCEEDED':
-            resp['latest_doi'] = self._get( self._uri('/{id}/doi', id=id))["doi"]
+        resp = self._get(self._uri("/{id}/published", id=id))
+        if resp["status"] == "PUBLISH_SUCCEEDED":
+            resp["latest_doi"] = self._get(self._uri("/{id}/doi", id=id))["doi"]
         return PublishInfo.from_dict(resp)
 
-    def package_count(self,ds):
+    def package_count(self, ds):
         id = self._get_id(ds)
-        resp = self._get( self._uri('/{id}/packageTypeCounts', id=id))
+        resp = self._get(self._uri("/{id}/packageTypeCounts", id=id))
         file_count = 0
         for key, value in resp.items():
             file_count += value
         return file_count
 
-    def status_log(self,ds,limit,offset):
+    def status_log(self, ds, limit, offset):
         id = self._get_id(ds)
-        resp = self._get( self._uri('/{id}/status-log?limit={limit}&offset={offset}', id=id, limit=limit, offset=offset))
+        resp = self._get(
+            self._uri(
+                "/{id}/status-log?limit={limit}&offset={offset}",
+                id=id,
+                limit=limit,
+                offset=offset,
+            )
+        )
         return StatusLogResponse.from_dict(resp)
 
-    def team_collaborators(self,ds):
+    def team_collaborators(self, ds):
         id = self._get_id(ds)
-        resp = self._get( self._uri('/{id}/collaborators/teams', id=id))
+        resp = self._get(self._uri("/{id}/collaborators/teams", id=id))
         return [TeamCollaborator.from_dict(t) for t in resp]
 
-    def user_collaborators(self,ds):
+    def user_collaborators(self, ds):
         id = self._get_id(ds)
-        resp = self._get( self._uri('/{id}/collaborators/users', id=id))
+        resp = self._get(self._uri("/{id}/collaborators/users", id=id))
         return [UserCollaborator.from_dict(u) for u in resp]
 
-    def get_packages_by_filename(self,ds,filename):
+    def get_packages_by_filename(self, ds, filename):
         id = self._get_id(ds)
-        resp = self._get( self._uri('/{id}/packages?filename={filename}', id=id, filename=filename))
-        return [DataPackage.from_dict(p, api=self.session) for p in resp.get('packages')]
+        resp = self._get(
+            self._uri("/{id}/packages?filename={filename}", id=id, filename=filename)
+        )
+        return [
+            DataPackage.from_dict(p, api=self.session) for p in resp.get("packages")
+        ]
 
     def owner(self, ds):
-        return next(iter(filter(lambda x: x.role == 'owner', self.user_collaborators(ds))))
+        return next(
+            iter(filter(lambda x: x.role == "owner", self.user_collaborators(ds)))
+        )
 
     def get_by_name_or_id(self, name_or_id):
         """
@@ -96,8 +111,9 @@ class DatasetsAPI(APIBase):
           - "mYdata SET"
 
         """
+
         def name_key(n):
-            return n.lower().strip().replace(' ', '').replace('_','').replace('-','')
+            return n.lower().strip().replace(" ", "").replace("_", "").replace("-", "")
 
         search_key = name_key(name_or_id)
 
@@ -108,7 +124,7 @@ class DatasetsAPI(APIBase):
         return matches[0] if matches else None
 
     def get_all(self):
-        resp = self._get( self._uri('/'))
+        resp = self._get(self._uri("/"))
         return [Dataset.from_dict(ds, api=self.session) for ds in resp]
 
     def create(self, ds):
@@ -118,7 +134,7 @@ class DatasetsAPI(APIBase):
         if self.get_by_name_or_id(ds.name) is not None:
             raise Exception("Dataset with name {} already exists".format(ds.name))
 
-        resp = self._post('', json=ds.as_dict())
+        resp = self._post("", json=ds.as_dict())
         return Dataset.from_dict(resp, api=self.session)
 
     def update(self, ds):
@@ -126,7 +142,7 @@ class DatasetsAPI(APIBase):
         Update a dataset on the platform
         """
         id = self._get_id(ds)
-        resp = self._put( self._uri('/{id}', id=id), json=ds.as_dict())
+        resp = self._put(self._uri("/{id}", id=id), json=ds.as_dict())
         return Dataset.from_dict(resp, api=self.session)
 
     def delete(self, ds):
@@ -134,7 +150,7 @@ class DatasetsAPI(APIBase):
         Delete a dataset on the platform
         """
         id = self._get_id(ds)
-        resp = self._del( self._uri('/{id}', id=id))
+        resp = self._del(self._uri("/{id}", id=id))
         ds.id = None
         return resp
 
@@ -143,18 +159,20 @@ class DatasetsAPI(APIBase):
 # Data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 class DataAPI(APIBase):
     """
     Interface for lower-level data operations on the platform.
     """
-    base_uri='/data'
-    name = 'data'
+
+    base_uri = "/data"
+    name = "data"
 
     def update_properties(self, thing):
         """
         Update properties for an object/package on the platform.
         """
-        path = self._uri('/{id}/properties', id=thing.id)
+        path = self._uri("/{id}/properties", id=thing.id)
         body = {"properties": [m.as_dict() for m in thing.properties]}
 
         return self._put(path, json=body)
@@ -164,9 +182,9 @@ class DataAPI(APIBase):
         Deletes objects from the platform
         """
         ids = list(set([self._get_id(x) for x in things]))
-        r = self._post('/delete', json=dict(things=ids))
-        if len(r['success']) != len(ids):
-            failures = [f['id'] for f in r['failures']]
+        r = self._post("/delete", json=dict(things=ids))
+        if len(r["success"]) != len(ids):
+            failures = [f["id"] for f in r["failures"]]
             print("Unable to delete objects: {}".format(failures))
 
         for thing in things:
@@ -184,22 +202,25 @@ class DataAPI(APIBase):
         dest = self._get_id(destination) if destination is not None else None
         return self._post("/move", json=dict(things=ids, destination=dest))
 
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Packages
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 class PackagesAPI(APIBase):
     """
     Interface for task/workflow objects on Blackfynn platform
     """
-    base_uri = '/packages'
-    name = 'packages'
+
+    base_uri = "/packages"
+    name = "packages"
 
     def create(self, pkg):
         """
         Create data package on platform
         """
-        resp = self._post('', json=pkg.as_dict())
+        resp = self._post("", json=pkg.as_dict())
         pkg = self._get_package_from_data(resp)
         return pkg
 
@@ -209,8 +230,8 @@ class PackagesAPI(APIBase):
         """
         d = pkg.as_dict()
         d.update(kwargs)
-        d.pop("state",None)
-        resp = self._put(self._uri('/{id}', id=pkg.id), json=d)
+        d.pop("state", None)
+        resp = self._put(self._uri("/{id}", id=pkg.id), json=d)
         pkg = self._get_package_from_data(resp)
         return pkg
 
@@ -226,11 +247,11 @@ class PackagesAPI(APIBase):
         params = None
         if include is not None:
             if isinstance(include, string_types):
-                params = {'include': include}
-            if hasattr(include, '__iter__'):
-                params = {'include': ','.join(include)}
+                params = {"include": include}
+            if hasattr(include, "__iter__"):
+                params = {"include": ",".join(include)}
 
-        resp = self._get(self._uri('/{id}', id=pkg_id), params=params)
+        resp = self._get(self._uri("/{id}", id=pkg_id), params=params)
 
         # TODO: cast to specific DataPackages based on `type`
         pkg = self._get_package_from_data(resp)
@@ -241,17 +262,17 @@ class PackagesAPI(APIBase):
         Process a package that has been successfully uploaded but not yet processed
         """
         try:
-            self._put(self._uri('/{id}/process', id=pkg.id))
+            self._put(self._uri("/{id}/process", id=pkg.id))
             return True
         except requests.exceptions.HTTPError as error:
             response = error.response
             status_code = response.status_code
-            message = response.json().get('message')
+            message = response.json().get("message")
 
             if status_code == requests.codes.bad_request and message is not None:
-              raise Exception(message)
+                raise Exception(message)
             else:
-              raise error
+                raise error
 
     def get_sources(self, pkg):
         """
@@ -259,9 +280,9 @@ class PackagesAPI(APIBase):
         files (if they exist) that contains the package's data.
         """
         pkg_id = self._get_id(pkg)
-        resp = self._get(self._uri('/{id}/sources', id=pkg_id))
+        resp = self._get(self._uri("/{id}/sources", id=pkg_id))
         for r in resp:
-            r['content'].update(dict(pkg_id=pkg_id))
+            r["content"].update(dict(pkg_id=pkg_id))
 
         return [File.from_dict(r, api=self.session) for r in resp]
 
@@ -272,9 +293,9 @@ class PackagesAPI(APIBase):
         be the source files themselves.
         """
         pkg_id = self._get_id(pkg)
-        resp = self._get(self._uri('/{id}/files', id=pkg_id))
+        resp = self._get(self._uri("/{id}/files", id=pkg_id))
         for r in resp:
-            r['content'].update(dict(pkg_id=pkg_id))
+            r["content"].update(dict(pkg_id=pkg_id))
 
         return [File.from_dict(r, api=self.session) for r in resp]
 
@@ -285,20 +306,17 @@ class PackagesAPI(APIBase):
         a unique object specific for the viewer.
         """
         pkg_id = self._get_id(pkg)
-        resp = self._get(self._uri('/{id}/view', id=pkg_id))
+        resp = self._get(self._uri("/{id}/view", id=pkg_id))
         for r in resp:
-            r['content'].update(dict(pkg_id=pkg_id))
+            r["content"].update(dict(pkg_id=pkg_id))
 
         return [File.from_dict(r, api=self.session) for r in resp]
 
     def get_presigned_url_for_file(self, pkg, file):
-        args = dict(
-            pkg_id = self._get_id(pkg),
-            file_id = self._get_id(file)
-        )
-        resp = self._get(self._uri('/{pkg_id}/files/{file_id}', **args))
-        if 'url' in resp:
-            return resp['url']
+        args = dict(pkg_id=self._get_id(pkg), file_id=self._get_id(file))
+        resp = self._get(self._uri("/{pkg_id}/files/{file_id}", **args))
+        if "url" in resp:
+            return resp["url"]
         else:
             raise Exception("Unable to get URL for file ID = {}".format(file_id))
 
@@ -307,37 +325,48 @@ class PackagesAPI(APIBase):
 # Tabular
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 class TabularAPI(APIBase):
     base_uri = "/tabular"
-    name = 'tabular'
+    name = "tabular"
 
     def _get_data_chunked(self, package, chunk_size, offset, order_by, order_direction):
-        path = self._uri('/{id}', id=self._get_id(package))
+        path = self._uri("/{id}", id=self._get_id(package))
 
-        params = dict(limit = chunk_size, offset = offset, order_direction = order_direction)
+        params = dict(limit=chunk_size, offset=offset, order_direction=order_direction)
         if order_by is not None:
-            params['orderBy'] = order_by
+            params["orderBy"] = order_by
 
         return self._get(path, params=params)
 
     @require_extension
-    def get_tabular_data_iter(self, package, offset, order_by, order_direction, chunk_size=10000):
+    def get_tabular_data_iter(
+        self, package, offset, order_by, order_direction, chunk_size=10000
+    ):
         """
         Return iterator that yields chunk_size data each call
         """
         if chunk_size > 10000:
-            raise ValueError('Chunk size must be less than 10000')
+            raise ValueError("Chunk size must be less than 10000")
 
         schema = self.get_table_schema(package)
-        column_names = {x.name: x.display_name if x.display_name else x.name
-                         for x in schema.column_schema}
+        column_names = {
+            x.name: x.display_name if x.display_name else x.name
+            for x in schema.column_schema
+        }
         internal_columns = [x.name for x in schema.column_schema if x.internal]
 
         while True:
-            resp = self._get_data_chunked(package, chunk_size=chunk_size, offset=offset, order_direction=order_direction, order_by=order_by)
+            resp = self._get_data_chunked(
+                package,
+                chunk_size=chunk_size,
+                offset=offset,
+                order_direction=order_direction,
+                order_by=order_by,
+            )
             offset = offset + chunk_size
 
-            df = pd.DataFrame.from_records(resp['rows'], exclude=internal_columns)
+            df = pd.DataFrame.from_records(resp["rows"], exclude=internal_columns)
             df.columns = [column_names.get(c) for c in df.columns]
 
             yield df
@@ -350,7 +379,12 @@ class TabularAPI(APIBase):
         """
         Get data for tabular package using iterator
         """
-        tab_iter = self.get_tabular_data_iter(package=package, offset=offset, order_by=order_by, order_direction=order_direction)
+        tab_iter = self.get_tabular_data_iter(
+            package=package,
+            offset=offset,
+            order_by=order_by,
+            order_direction=order_direction,
+        )
         df = pd.DataFrame()
         for tmp_df in tab_iter:
             df = df.append(tmp_df)
@@ -363,11 +397,11 @@ class TabularAPI(APIBase):
         tabular_schema: blackfynn.tabular.models.TabularSchema
         """
         id = self._get_id(package)
-        path = self._uri('/{id}/schema', id=id)
-        if isinstance(tabular_schema,TabularSchema):
-            body = { 'schema' : tabular_schema.as_dict()}
+        path = self._uri("/{id}/schema", id=id)
+        if isinstance(tabular_schema, TabularSchema):
+            body = {"schema": tabular_schema.as_dict()}
         else:
-            body = { 'schema': tabular_schema}
+            body = {"schema": tabular_schema}
 
         resp = self._post(path, json=body)
         data = resp
@@ -376,7 +410,7 @@ class TabularAPI(APIBase):
 
     def get_table_schema(self, package):
         id = self._get_id(package)
-        path = self._uri('/{id}/schema', id=id)
+        path = self._uri("/{id}/schema", id=id)
         resp = self._get(path)
         return TabularSchema.from_dict(resp)
 
@@ -385,12 +419,14 @@ class TabularAPI(APIBase):
 # Files
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 class FilesAPI(APIBase):
     """
     Interface for managing file object in Blackfynn
     """
+
     base_uri = "/files"
-    name = 'files'
+    name = "files"
 
     def create(self, file, destination=None):
         """
@@ -401,7 +437,7 @@ class FilesAPI(APIBase):
         body = file.as_dict()
         body["container"] = container
 
-        response = self._post('', json=body)
+        response = self._post("", json=body)
 
         return File.from_dict(response, api=self.session)
 
@@ -409,12 +445,12 @@ class FilesAPI(APIBase):
         """
         Update a file on the platform
         """
-        loc = self._uri('/{id}', id=file.id)
+        loc = self._uri("/{id}", id=file.id)
         return self._put(loc, json=file.as_dict())
 
     def url(self, file):
         """
         Get pre-signed URL for File object
         """
-        loc = self._uri('/{id}', id=file.id)
-        return self._get(loc)['url']
+        loc = self._uri("/{id}", id=file.id)
+        return self._get(loc)["url"]

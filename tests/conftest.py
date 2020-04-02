@@ -7,7 +7,7 @@ import pytest
 from tests.utils import create_test_dataset, get_test_client
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def client():
     """
     Login via API, return client. Login information, by default, will be taken from
@@ -17,10 +17,10 @@ def client():
     return get_test_client()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def client2():
-    api_token = os.environ.get('BLACKFYNN_API_TOKEN2')
-    api_secret = os.environ.get('BLACKFYNN_API_SECRET2')
+    api_token = os.environ.get("BLACKFYNN_API_TOKEN2")
+    api_secret = os.environ.get("BLACKFYNN_API_SECRET2")
     assert api_token != "", "Must define BLACKFYNN_API_TOKEN2"
     assert api_secret != "", "Must define BLACKFYNN_API_SECRET2"
 
@@ -28,12 +28,12 @@ def client2():
     return bf
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def session_id():
     return "{}-{}".format(str(datetime.now()), str(uuid4())[:4])
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def dataset(client):
     """
     Test Dataset to be used by other tests.
@@ -53,9 +53,9 @@ def dataset(client):
     all_dataset_ids = [x.id for x in client.datasets()]
     assert ds_id not in all_dataset_ids
     assert not ds.exists
-    assert not hasattr(ds, 'parent')
+    assert not hasattr(ds, "parent")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def test_organization(client):
-    return [o for o in client.organizations() if o.name == 'Blackfynn'][0]
+    return [o for o in client.organizations() if o.name == "Blackfynn"][0]

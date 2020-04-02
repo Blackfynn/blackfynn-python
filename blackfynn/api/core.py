@@ -13,19 +13,21 @@ from blackfynn.models import (
     Relationship,
     RelationshipType,
     User,
-    get_package_class
+    get_package_class,
 )
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Core API
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 class CoreAPI(APIBase):
     """
     Special higher-level API actions that may use other registered APIs.
     All in the name of convenience.
     """
-    name = 'core'
+
+    name = "core"
 
     def __init__(self, *args, **kwargs):
         super(CoreAPI, self).__init__(*args, **kwargs)
@@ -42,7 +44,11 @@ class CoreAPI(APIBase):
 
         if isinstance(thing, (DataPackage, Collection)):
             if thing.dataset is None:
-                raise Exception("{} not created. Must have property `dataset` set.".format(type(thing)))
+                raise Exception(
+                    "{} not created. Must have property `dataset` set.".format(
+                        type(thing)
+                    )
+                )
             item = self.session.packages.create(thing)
         elif isinstance(thing, Dataset):
             item = self.session.datasets.create(thing)
@@ -55,7 +61,7 @@ class CoreAPI(APIBase):
         elif isinstance(thing, Relationship):
             item = self.session.concepts.relations.create(thing)
         else:
-            raise Exception('Unable to create object.')
+            raise Exception("Unable to create object.")
 
         item._api = self.session
 
@@ -76,7 +82,7 @@ class CoreAPI(APIBase):
         elif isinstance(thing, Record):
             item = self.session.concepts.instances.update(thing)
         else:
-            raise Exception('Unable to update object.')
+            raise Exception("Unable to update object.")
 
         return item
 
@@ -96,7 +102,7 @@ class CoreAPI(APIBase):
         """
         self.session.data.delete(*things)
         for thing in things:
-            if hasattr(thing, 'parent'):
+            if hasattr(thing, "parent"):
                 # attempt to remove from parent object
                 p = self.get_local(thing.parent)
 
@@ -126,18 +132,20 @@ class CoreAPI(APIBase):
 # Organizations
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 class OrganizationsAPI(APIBase):
     """
     Interface for task/workflow objects on Blackfynn platform
     """
-    base_uri = '/organizations'
-    name = 'organizations'
+
+    base_uri = "/organizations"
+    name = "organizations"
 
     def get_all(self):
         """
         Get all organizations for logged-in user.
         """
-        my_orgs = self._get('?includeAdmins=false')['organizations']
+        my_orgs = self._get("?includeAdmins=false")["organizations"]
 
         return [Organization.from_dict(x, api=self.session) for x in my_orgs]
 
@@ -148,64 +156,65 @@ class OrganizationsAPI(APIBase):
         org: Organization class or id string
         """
         id = self._get_id(org)
-        resp = self._get(self._uri('/{id}', id=id))
+        resp = self._get(self._uri("/{id}", id=id))
         return Organization.from_dict(resp, api=self.session)
 
     def get_teams(self, org):
         id = self._get_id(org)
-        return self._get(self._uri('/{id}/teams', id=id))
+        return self._get(self._uri("/{id}/teams", id=id))
 
     def get_members(self, org):
         id = self._get_id(org)
-        resp = self._get(self._uri('/{id}/members', id=id))
+        resp = self._get(self._uri("/{id}/members", id=id))
         return [User.from_dict(r, api=self.session) for r in resp]
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Security
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 class SecurityAPI(APIBase):
     """
     Interface for interacting with Blackfynn's security model
     """
-    base_uri = '/security'
-    name = 'security'
+
+    base_uri = "/security"
+    name = "security"
 
     def get_upload_credentials(self, dataset_id):
         """
         Get temporary credentials for a user's folder in the s3 bucket
         """
         return self._get(
-                self._uri(
-                    '/user/credentials/upload/{dataset_id}',
-                    dataset_id=dataset_id))
+            self._uri("/user/credentials/upload/{dataset_id}", dataset_id=dataset_id)
+        )
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Search
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 class SearchAPI(APIBase):
     """
     Interface for searching Blackfynn
     """
-    base_uri = '/search'
-    name = 'search'
+
+    base_uri = "/search"
+    name = "search"
 
     def query(self, terms, max_results=10):
-        data = dict(
-            query = terms,
-            maxResults = max_results
-        )
-        resp = self._post(endpoint='', json=data)
+        data = dict(query=terms, maxResults=max_results)
+        resp = self._post(endpoint="", json=data)
 
         results = []
         for r in resp:
             pkg_cls = get_package_class(r)
             if pkg_cls == Dataset:
-                pkg = self.session.datasets.get(r['id'])
+                pkg = self.session.datasets.get(r["id"])
             else:
-                pkg = self.session.packages.get(r['id'])
+                pkg = self.session.packages.get(r["id"])
 
             results.append(pkg)
 

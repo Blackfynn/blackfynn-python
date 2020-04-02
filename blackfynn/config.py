@@ -147,66 +147,57 @@ from __future__ import absolute_import, division, print_function
 import configparser
 import os
 
-BLACKFYNN_DIR_DEFAULT = os.path.join(os.path.expanduser('~'), '.blackfynn')
-CACHE_DIR_DEFAULT = os.path.join(BLACKFYNN_DIR_DEFAULT, 'cache')
-CACHE_INDEX_DEFAULT = os.path.join(CACHE_DIR_DEFAULT, 'index.db')
+BLACKFYNN_DIR_DEFAULT = os.path.join(os.path.expanduser("~"), ".blackfynn")
+CACHE_DIR_DEFAULT = os.path.join(BLACKFYNN_DIR_DEFAULT, "cache")
+CACHE_INDEX_DEFAULT = os.path.join(CACHE_DIR_DEFAULT, "index.db")
 
 DEFAULTS = {
     # blackfynn api locations
-    'api_host'                    : 'https://api.blackfynn.io',
-    'model_service_host'          : None,
-
+    "api_host": "https://api.blackfynn.io",
+    "model_service_host": None,
     # blackfynn API token/secret
-    'api_token'                   : None,
-    'api_secret'                  : None,
-
+    "api_token": None,
+    "api_secret": None,
     # blackfynn JWT
-    'jwt'                         : None,
-
+    "jwt": None,
     # all requests
-    'max_request_time'            : 120, # two minutes
-    'max_request_timeout_retries' : 2,
-
-    #io
-    'max_upload_workers'          : 10,
-
+    "max_request_time": 120,  # two minutes
+    "max_request_timeout_retries": 2,
+    # io
+    "max_upload_workers": 10,
     # timeseries
-    'max_points_per_chunk'        : 10000,
-
+    "max_points_per_chunk": 10000,
     # s3 (amazon/local)
-    's3_host'                     : '',
-    's3_port'                     : '',
-
+    "s3_host": "",
+    "s3_port": "",
     # directories
-    'blackfynn_dir'               : BLACKFYNN_DIR_DEFAULT,
-    'cache_dir'                   : CACHE_DIR_DEFAULT,
-
+    "blackfynn_dir": BLACKFYNN_DIR_DEFAULT,
+    "cache_dir": CACHE_DIR_DEFAULT,
     # cache
-    'cache_index'                 : CACHE_INDEX_DEFAULT,
-    'cache_max_size'              : 2048,
-    'cache_inspect_interval'      : 1000,
-    'ts_page_size'                : 3600,
-    'use_cache'                   : True,
+    "cache_index": CACHE_INDEX_DEFAULT,
+    "cache_max_size": 2048,
+    "cache_inspect_interval": 1000,
+    "ts_page_size": 3600,
+    "use_cache": True,
 }
 
 ENVIRONMENT_VARIABLES = {
-    'api_host'               : ('BLACKFYNN_API_LOC', str),
-    'api_token'              : ('BLACKFYNN_API_TOKEN', str),
-    'api_secret'             : ('BLACKFYNN_API_SECRET', str),
-    'jwt'                    : ('BLACKFYNN_JWT', str),
-
-    'blackfynn_dir'          : ('BLACKFYNN_LOCAL_DIR', str),
-    'cache_dir'              : ('BLACKFYNN_CACHE_LOC', str),
-    'cache_max_size'         : ('BLACKFYNN_CACHE_MAX_SIZE', int),
-    'cache_inspect_interval' : ('BLACKFYNN_CACHE_INSPECT_EVERY', int),
-    'ts_page_size'           : ('BLACKFYNN_TS_PAGE_SIZE', int),
-    'use_cache'              : ('BLACKFYNN_USE_CACHE', lambda x: bool(int(x))),
-    'default_profile'        : ('BLACKFYNN_PROFILE', str),
-
+    "api_host": ("BLACKFYNN_API_LOC", str),
+    "api_token": ("BLACKFYNN_API_TOKEN", str),
+    "api_secret": ("BLACKFYNN_API_SECRET", str),
+    "jwt": ("BLACKFYNN_JWT", str),
+    "blackfynn_dir": ("BLACKFYNN_LOCAL_DIR", str),
+    "cache_dir": ("BLACKFYNN_CACHE_LOC", str),
+    "cache_max_size": ("BLACKFYNN_CACHE_MAX_SIZE", int),
+    "cache_inspect_interval": ("BLACKFYNN_CACHE_INSPECT_EVERY", int),
+    "ts_page_size": ("BLACKFYNN_TS_PAGE_SIZE", int),
+    "use_cache": ("BLACKFYNN_USE_CACHE", lambda x: bool(int(x))),
+    "default_profile": ("BLACKFYNN_PROFILE", str),
     # advanced
-    's3_host'                : ('S3_HOST', str),
-    's3_port'                : ('S3_PORT', str)
+    "s3_host": ("S3_HOST", str),
+    "s3_port": ("S3_PORT", str),
 }
+
 
 class Settings(object):
     def __init__(self, profile=None, overrides=None, env_override=True):
@@ -227,16 +218,15 @@ class Settings(object):
         # use default profile first
         try:
             # first apply config default profile
-            self._switch_profile(self.config['global']['default_profile'])
+            self._switch_profile(self.config["global"]["default_profile"])
         except:
-            self._switch_profile('global')
+            self._switch_profile("global")
 
         # apply BLACKFYNN_PROFILE
         self._switch_profile(environs.get("default_profile"))
 
         # use specific profile if specified
         self._switch_profile(profile)
-
 
         # override with env variables
         if env_override:
@@ -263,7 +253,7 @@ class Settings(object):
         return override
 
     def _load_config(self):
-        self.config_file = os.path.join(self.blackfynn_dir,'config.ini')
+        self.config_file = os.path.join(self.blackfynn_dir, "config.ini")
         self.config = configparser.ConfigParser()
         self.config.read(self.config_file)
 
@@ -277,31 +267,36 @@ class Settings(object):
 
     def _load_profiles(self):
         # load global first
-        self.profiles['global'] = DEFAULTS.copy()
-        if 'global' in self.config:
-            self._parse_profile('global')
+        self.profiles["global"] = DEFAULTS.copy()
+        if "global" in self.config:
+            self._parse_profile("global")
         for name in self.config.sections():
-            if name is not 'global':
-                self.profiles[name] = self.profiles['global'].copy()
+            if name is not "global":
+                self.profiles[name] = self.profiles["global"].copy()
                 self._parse_profile(name)
 
     def _parse_profile(self, name):
         for key, value in self.config[name].items():
-            if value == 'none'            : self.profiles[name][key] = None
-            elif value.lower() == 'true'  : self.profiles[name][key] = True
-            elif value.lower() == 'false' : self.profiles[name][key] = False
-            elif value.isdigit()          : self.profiles[name][key] = int(value)
-            else                          : self.profiles[name][key] = str(value)
+            if value == "none":
+                self.profiles[name][key] = None
+            elif value.lower() == "true":
+                self.profiles[name][key] = True
+            elif value.lower() == "false":
+                self.profiles[name][key] = False
+            elif value.isdigit():
+                self.profiles[name][key] = int(value)
+            else:
+                self.profiles[name][key] = str(value)
 
     def _switch_profile(self, name):
         if name is None:
             return
         if name not in self.profiles:
-            raise Exception('Invalid profile name')
+            raise Exception("Invalid profile name")
         else:
             self.__dict__.update(self.profiles[name])
             self.active_profile = name
-            if name is 'global':
+            if name is "global":
                 self.active_profile = None
 
     @property

@@ -12,21 +12,10 @@ from blackfynn.api.concepts import (
     ModelRelationshipsAPI,
     ModelsAPI,
     ModelTemplatesAPI,
-    RecordsAPI
+    RecordsAPI,
 )
-from blackfynn.api.core import (
-    CoreAPI,
-    OrganizationsAPI,
-    SearchAPI,
-    SecurityAPI
-)
-from blackfynn.api.data import (
-    DataAPI,
-    DatasetsAPI,
-    FilesAPI,
-    PackagesAPI,
-    TabularAPI
-)
+from blackfynn.api.core import CoreAPI, OrganizationsAPI, SearchAPI, SecurityAPI
+from blackfynn.api.data import DataAPI, DatasetsAPI, FilesAPI, PackagesAPI, TabularAPI
 from blackfynn.api.timeseries import TimeSeriesAPI
 from blackfynn.api.transfers import IOAPI
 from blackfynn.api.user import UserAPI
@@ -85,26 +74,49 @@ class Blackfynn(object):
         are properly set.
 
     """
-    def __init__(self, profile=None, api_token=None, api_secret=None, jwt=None, host=None, model_service_host=None, env_override=True, **overrides):
+
+    def __init__(
+        self,
+        profile=None,
+        api_token=None,
+        api_secret=None,
+        jwt=None,
+        host=None,
+        model_service_host=None,
+        env_override=True,
+        **overrides
+    ):
 
         self._logger = log.get_logger("blackfynn.client.Blackfynn")
 
-        overrides.update({ k: v for k, v in {
-            'api_token': api_token,
-            'api_secret': api_secret,
-            'api_host': host,
-            'jwt': jwt,
-            'model_service_host': model_service_host
-            }.items() if v != None })
+        overrides.update(
+            {
+                k: v
+                for k, v in {
+                    "api_token": api_token,
+                    "api_secret": api_secret,
+                    "api_host": host,
+                    "jwt": jwt,
+                    "model_service_host": model_service_host,
+                }.items()
+                if v != None
+            }
+        )
         self.settings = Settings(profile, overrides, env_override)
 
-        if (self.settings.api_token is None or self.settings.api_secret is None) and self.settings.jwt is None:
-            if self.settings.api_token  is None:
-                raise Exception('Error: No API token found. Cannot connect to Blackfynn.')
+        if (
+            self.settings.api_token is None or self.settings.api_secret is None
+        ) and self.settings.jwt is None:
+            if self.settings.api_token is None:
+                raise Exception(
+                    "Error: No API token found. Cannot connect to Blackfynn."
+                )
             if self.settings.api_secret is None:
-                raise Exception('Error: No API secret found. Cannot connect to Blackfynn.')
-            if self.settings.jwt  is None:
-                raise Exception('Error: No JWT found. Cannot connect to Blackfynn.')
+                raise Exception(
+                    "Error: No API secret found. Cannot connect to Blackfynn."
+                )
+            if self.settings.jwt is None:
+                raise Exception("Error: No JWT found. Cannot connect to Blackfynn.")
 
         # direct interface to REST API.
         self._api = ClientSession(self.settings)
@@ -129,11 +141,10 @@ class Blackfynn(object):
             RecordsAPI,
             ModelRelationshipsAPI,
             ModelRelationshipInstancesAPI,
-            ModelTemplatesAPI
+            ModelTemplatesAPI,
         )
 
         self._api._context = self._api.organizations.get(self._api._organization)
-
 
     @property
     def context(self):
@@ -175,11 +186,13 @@ class Blackfynn(object):
         try:
             return self._api.core.get(id, update=update)
         except:
-            self._logger.info("Unable to retrieve object"\
-                             "\n\nAcceptable objects for get() are:"\
-                             "\n - DataPackages"\
-                             "\n - Collections"\
-                             "\n\nUse get_dataset() if trying to retrieve a dataset")
+            self._logger.info(
+                "Unable to retrieve object"
+                "\n\nAcceptable objects for get() are:"
+                "\n - DataPackages"
+                "\n - Collections"
+                "\n\nUse get_dataset() if trying to retrieve a dataset"
+            )
 
     def create(self, thing):
         """
@@ -187,7 +200,9 @@ class Blackfynn(object):
         """
         return self._api.core.create(thing)
 
-    def create_dataset(self, name, description=None, automatically_process_packages=False):
+    def create_dataset(
+        self, name, description=None, automatically_process_packages=False
+    ):
         """
         Create a dataset under the active organization.
 
@@ -199,7 +214,13 @@ class Blackfynn(object):
 
         """
         self._check_context()
-        return self._api.datasets.create(Dataset(name, description=description, automatically_process_packages=automatically_process_packages))
+        return self._api.datasets.create(
+            Dataset(
+                name,
+                description=description,
+                automatically_process_packages=automatically_process_packages,
+            )
+        )
 
     def get_dataset(self, name_or_id):
         """
@@ -307,8 +328,7 @@ class Blackfynn(object):
 
     def _check_context(self):
         if self.context is None:
-            raise Exception('Must set context before executing method.')
-
+            raise Exception("Must set context before executing method.")
 
     def get_model_template(self, template_id):
         """
@@ -338,7 +358,7 @@ class Blackfynn(object):
         category=None,
         required=None,
         properties=None,
-        template=None
+        template=None,
     ):
         """
         Create a new model template belonging to the current organization.
@@ -386,12 +406,19 @@ class Blackfynn(object):
         Returns:
             The created ModelTemplate object.
         """
-        if (template is None):
-            template_to_create = ModelTemplate(name=name, description=description, category=category, required=required,
-                                     properties=properties)
+        if template is None:
+            template_to_create = ModelTemplate(
+                name=name,
+                description=description,
+                category=category,
+                required=required,
+                properties=properties,
+            )
         else:
             template_to_create = template
-            assert isinstance(template_to_create, ModelTemplate), "template must be type ModelTemplate"
+            assert isinstance(
+                template_to_create, ModelTemplate
+            ), "template must be type ModelTemplate"
 
         return self._api.templates.create(template=template_to_create)
 
@@ -402,7 +429,7 @@ class Blackfynn(object):
         category=None,
         required=None,
         properties=None,
-        template=None
+        template=None,
     ):
         """
         Validate a model template schema.
@@ -448,12 +475,19 @@ class Blackfynn(object):
         Returns:
             "True" or a list of validation errors
         """
-        if (template is None):
-            template_to_validate = ModelTemplate(name=name, description=description, category=category, required=required,
-                                               properties=properties)
+        if template is None:
+            template_to_validate = ModelTemplate(
+                name=name,
+                description=description,
+                category=category,
+                required=required,
+                properties=properties,
+            )
         else:
             template_to_validate = template
-            assert isinstance(template_to_validate, ModelTemplate), "template must be type ModelTemplate"
+            assert isinstance(
+                template_to_validate, ModelTemplate
+            ), "template must be type ModelTemplate"
 
         return self._api.templates.validate(template=template_to_validate)
 
@@ -469,4 +503,6 @@ class Blackfynn(object):
 
     @as_native_str()
     def __repr__(self):
-        return "<Blackfynn user='{}' organization='{}'>".format(self.profile.email, self.context.name)
+        return "<Blackfynn user='{}' organization='{}'>".format(
+            self.profile.email, self.context.name
+        )

@@ -10,7 +10,7 @@ def test_tabular(client, dataset):
     """
     TODO: parsing of tabular/schema response from API not implemented.
     """
-    t = Tabular('Some tabular data')
+    t = Tabular("Some tabular data")
     assert not t.exists
     assert t.schema is None
 
@@ -21,18 +21,18 @@ def test_tabular(client, dataset):
 
     schema = [
         TabularSchemaColumn(
-            name = '',
-            display_name = 'index',
-            datatype = 'Integer',
-            primary_key = True,
-            internal = True
+            name="",
+            display_name="index",
+            datatype="Integer",
+            primary_key=True,
+            internal=True,
         ),
         TabularSchemaColumn(
-            name = '',
-            display_name = 'email',
-            datatype = 'String',
-            primary_key = False,
-            internal = False
+            name="",
+            display_name="email",
+            datatype="String",
+            primary_key=False,
+            internal=False,
         ),
     ]
 

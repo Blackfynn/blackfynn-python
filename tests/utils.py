@@ -13,7 +13,9 @@ def current_ts():
 
 def get_test_client(profile=None, api_token=None, api_secret=None, **overrides):
     """ Utility function to get a Blackfynn client object """
-    bf = Blackfynn(profile=profile, api_token=api_token, api_secret=api_secret, **overrides)
+    bf = Blackfynn(
+        profile=profile, api_token=api_token, api_secret=api_secret, **overrides
+    )
     assert bf.context is not None
     orgs = bf.organizations()
     assert len(orgs) > 0

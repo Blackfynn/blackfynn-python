@@ -27,6 +27,12 @@ after_success: bash <(curl -s https://codecov.io/bash)
 
 jobs:
   include:
+    - stage: lint
+      python: 3.6
+      script:
+        - pip install -r requirements-format.txt
+        - make lint
+
     - stage: test Python 2.7
       python: 2.7
 
