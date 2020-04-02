@@ -445,6 +445,46 @@ class RecordsAPI(ModelsAPIBase):
         return LinkedModelValue.from_dict(resp, source_model=concept,
             target_model=target, link_type=link_type)
 
+    def create_link_batch(self, dataset, concept, instance, payload):
+        dataset_id = self._get_id(dataset)
+        concept_id = self._get_id(concept)
+        instance_id = self._get_id(instance)
+
+        json = {
+            "data": payload
+        }
+
+        resp = self._post(
+            self._uri(
+                '/{dataset_id}/concepts/{concept_id}/instances/{instance_id}/linked/batch',
+                dataset_id=dataset_id,
+                concept_id=concept_id,
+                instance_id=instance_id,
+                json=json
+            )
+        )
+
+        results = resp["data"]
+
+        return results
+        # TODO: LinkedModelValue requires a fully instantiated target model
+        # it's quite inefficient to retrieve individual models in a loop via `concepts.get`,
+        # but we don't have a better way to retrieve them at this time.
+        # For the sake of speed, we just return the raw JSON for now
+        # linked_model_values = []
+        # for r in results:
+        #     link_type = concept.get_linked_property(r["schemaLinkedPropertyId"])
+        #     target = concept._api.concepts.get(dataset, link_type.target)
+        #     linked_model_values.append(
+        #         LinkedModelValue.from_dict(
+        #             r,
+        #             source_model=concept,
+        #             target_model=target,
+        #             link_type=link_type
+        #         )
+        #     )
+        # return linked_model_values
+
     def remove_link(self, dataset, concept, instance, value):
         dataset_id = self._get_id(dataset)
         concept_id = self._get_id(concept)
