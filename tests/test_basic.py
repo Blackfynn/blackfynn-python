@@ -3,20 +3,18 @@ import os
 
 import pytest
 import requests
+from dateutil.parser import parse
 
 from blackfynn import Blackfynn
 from blackfynn.base import UnauthorizedException
-from dateutil.parser import parse
-
-# client library
 from blackfynn.models import (
     BaseNode,
     DataPackage,
     Dataset,
     File,
     PublishInfo,
-    UserCollaborator,
     TeamCollaborator,
+    UserCollaborator,
 )
 
 from .utils import get_test_client

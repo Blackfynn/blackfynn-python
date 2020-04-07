@@ -4,6 +4,7 @@ from future.utils import string_types
 
 import itertools
 import json
+
 import requests
 
 from blackfynn.api.base import APIBase
@@ -12,11 +13,11 @@ from blackfynn.models import (
     LinkedModelProperty,
     LinkedModelValue,
     Model,
-    ModelProperty,
-    ModelTemplate,
-    ModelSelect,
     ModelFilter,
     ModelJoin,
+    ModelProperty,
+    ModelSelect,
+    ModelTemplate,
     ProxyInstance,
     QueryResult,
     Record,

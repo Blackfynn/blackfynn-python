@@ -9,23 +9,25 @@ import requests
 
 import blackfynn.log as log
 from blackfynn.api.base import APIBase
-from blackfynn.extensions import require_extension, pandas as pd, numpy as np
+from blackfynn.extensions import numpy as np
+from blackfynn.extensions import pandas as pd
+from blackfynn.extensions import require_extension
 from blackfynn.models import (
     BaseDataNode,
     Collection,
-    Dataset,
     DataPackage,
+    Dataset,
     File,
     Organization,
+    PublishInfo,
+    StatusLogEntry,
+    StatusLogResponse,
     Tabular,
     TabularSchema,
     TabularSchemaColumn,
-    User,
-    StatusLogResponse,
-    StatusLogEntry,
-    PublishInfo,
-    UserCollaborator,
     TeamCollaborator,
+    User,
+    UserCollaborator,
 )
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

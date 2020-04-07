@@ -1,11 +1,10 @@
-import pytest
 from uuid import uuid4
 
-from blackfynn.models import (
-    LinkedModelProperty,
-    ModelProperty,
-)
+import pytest
+
+from blackfynn.models import LinkedModelProperty, ModelProperty
 from tests.utils import create_test_dataset
+
 
 ### Testing linked properties locally:
 def test_make_linked_property(dataset):

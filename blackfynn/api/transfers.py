@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function
-from builtins import dict, object
 from future.utils import string_types
 
 import io
@@ -10,6 +9,7 @@ import sys
 import threading
 import time
 import uuid
+from builtins import dict, object
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import boto3
@@ -17,7 +17,7 @@ from boto3.s3.transfer import S3Transfer
 from botocore.client import Config
 
 import blackfynn.log as log
-from blackfynn.api.agent import validate_agent_installation, agent_upload
+from blackfynn.api.agent import agent_upload, validate_agent_installation
 from blackfynn.api.base import APIBase
 from blackfynn.models import Collection, DataPackage, Dataset, TimeSeries
 

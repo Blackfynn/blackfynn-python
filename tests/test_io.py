@@ -1,11 +1,11 @@
-import uuid
-import pytest
 import time
+import uuid
 
+import pytest
 from pkg_resources import resource_filename
 
-from blackfynn.models import TimeSeries
 from blackfynn.api.agent import AgentError
+from blackfynn.models import TimeSeries
 
 
 def _resource_path(fname):

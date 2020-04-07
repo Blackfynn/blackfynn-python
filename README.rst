@@ -53,7 +53,7 @@ Install the test requirements before running `pytest`_:
 
 .. code:: bash
 
-    pip install -r requirements-test.txt
+    make install
     pytest
 
 To run the Blackfynn CLI Agent integration tests, you need to `install the agent`_

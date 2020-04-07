@@ -2,25 +2,26 @@
 
 # blackfynn-specific
 from __future__ import absolute_import, division, print_function
-from builtins import dict, object
 from future.utils import as_native_str
 
-import blackfynn.log as log
-from blackfynn import Settings
-from blackfynn.api.concepts import (
+from builtins import dict, object
+
+from . import log
+from .api.concepts import (
     ModelRelationshipInstancesAPI,
     ModelRelationshipsAPI,
     ModelsAPI,
     ModelTemplatesAPI,
     RecordsAPI,
 )
-from blackfynn.api.core import CoreAPI, OrganizationsAPI, SearchAPI, SecurityAPI
-from blackfynn.api.data import DataAPI, DatasetsAPI, FilesAPI, PackagesAPI, TabularAPI
-from blackfynn.api.timeseries import TimeSeriesAPI
-from blackfynn.api.transfers import IOAPI
-from blackfynn.api.user import UserAPI
-from blackfynn.base import ClientSession
-from blackfynn.models import Dataset, ModelTemplate
+from .api.core import CoreAPI, OrganizationsAPI, SearchAPI, SecurityAPI
+from .api.data import DataAPI, DatasetsAPI, FilesAPI, PackagesAPI, TabularAPI
+from .api.timeseries import TimeSeriesAPI
+from .api.transfers import IOAPI
+from .api.user import UserAPI
+from .base import ClientSession
+from .config import Settings
+from .models import Dataset, ModelTemplate
 
 
 class Blackfynn(object):

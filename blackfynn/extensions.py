@@ -1,6 +1,5 @@
 import functools
 
-
 try:
     import pandas
 except ImportError:

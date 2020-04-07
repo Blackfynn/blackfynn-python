@@ -1,8 +1,8 @@
 import datetime
 from collections import namedtuple
-from past.builtins import unicode  # Alias of str in Python 3
 
 import pytest
+from past.builtins import unicode  # Alias of str in Python 3
 
 from blackfynn.models import (
     DataPackage,

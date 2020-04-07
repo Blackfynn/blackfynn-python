@@ -1,23 +1,25 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function
-from builtins import object, zip
-from future.utils import as_native_str, string_types, PY2
+from future.utils import PY2, as_native_str, string_types
 
 import datetime
 import io
 import os
 import re
 import sys
+from builtins import object, zip
 from uuid import uuid4
 
 import dateutil
-from dateutil.parser import parse
 import pytz
 import requests
+from dateutil.parser import parse
 
 import blackfynn.log as log
-from blackfynn.extensions import require_extension, pandas as pd, numpy as np
+from blackfynn.extensions import numpy as np
+from blackfynn.extensions import pandas as pd
+from blackfynn.extensions import require_extension
 from blackfynn.utils import get_data_type, infer_epoch, usecs_to_datetime, value_as_type
 
 try:  # Python 3

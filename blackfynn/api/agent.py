@@ -1,4 +1,5 @@
 from __future__ import division
+from future.utils import raise_from
 
 import errno
 import json
@@ -10,9 +11,9 @@ from collections import OrderedDict
 from time import sleep
 
 import semver
-from future.utils import raise_from
+
 from blackfynn.log import get_logger
-from blackfynn.models import Collection, Dataset, DataPackage
+from blackfynn.models import Collection, DataPackage, Dataset
 
 logger = get_logger("blackfynn.agent")
 

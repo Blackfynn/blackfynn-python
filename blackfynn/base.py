@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
-from builtins import dict, object
+from future.utils import raise_from
 
 import base64
 import json
+from builtins import dict, object
 
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.exceptions import HTTPError
 from requests.packages.urllib3.util.retry import Retry
-from future.utils import raise_from
 
 # blackfynn
 import blackfynn.log as log

@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function
-from future.utils import string_types, integer_types
+from future.utils import integer_types, string_types
 
 import datetime
 
-from blackfynn.extensions import require_extension, pandas as pd, numpy as np
+from blackfynn.extensions import numpy as np
+from blackfynn.extensions import pandas as pd
+from blackfynn.extensions import require_extension
 
 # data type helpers
 

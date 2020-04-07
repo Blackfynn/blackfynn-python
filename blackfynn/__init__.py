@@ -1,16 +1,12 @@
-from .config import Settings, DEFAULTS as DEFAULT_SETTINGS
-
-# main client
 from .client import Blackfynn
-
-# base models
+from .config import DEFAULTS as DEFAULT_SETTINGS
+from .config import Settings
 from .models import (
     BaseNode,
-    Property,
-    Organization,
-    File,
-    DataPackage,
     Collection,
+    DataPackage,
+    Dataset,
+    File,
     LinkedModelProperty,
     Model,
     ModelFilter,
@@ -18,17 +14,18 @@ from .models import (
     ModelProperty,
     ModelSelect,
     ModelTemplate,
+    Organization,
+    Property,
     Record,
     RecordSet,
-    Dataset,
-    RelationshipType,
     Relationship,
     RelationshipSet,
+    RelationshipType,
     Tabular,
     TabularSchema,
     TimeSeries,
-    TimeSeriesChannel,
     TimeSeriesAnnotation,
+    TimeSeriesChannel,
 )
 
 __title__ = "blackfynn"

@@ -1,15 +1,13 @@
 from __future__ import absolute_import, division, print_function
+from future import standard_library
 from future.utils import integer_types, string_types
 
 import blackfynn.log as log
 from blackfynn.models import get_package_class
 
 # urllib compatibility
-from future import standard_library
-
 standard_library.install_aliases()
-import urllib.parse
-
+import urllib.parse  # isort:skip
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Base class

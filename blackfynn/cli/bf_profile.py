@@ -42,6 +42,7 @@ https://developer.blackfynn.io/agent
 """
 
 from __future__ import absolute_import, print_function
+
 import io
 import os
 from builtins import input
@@ -49,7 +50,7 @@ from builtins import input
 from docopt import docopt
 
 import blackfynn
-from blackfynn import Blackfynn, DEFAULT_SETTINGS, Settings
+from blackfynn import DEFAULT_SETTINGS, Blackfynn, Settings
 
 
 def main():

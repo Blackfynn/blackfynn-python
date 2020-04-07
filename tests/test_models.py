@@ -1,5 +1,6 @@
-from blackfynn.models import _get_all_class_args
 from builtins import object
+
+from blackfynn.models import _get_all_class_args
 
 
 def test_get_all_class_args():

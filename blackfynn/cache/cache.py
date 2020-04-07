@@ -1,6 +1,4 @@
 from __future__ import absolute_import, division, print_function
-from builtins import filter, object, zip
-
 
 import io
 import multiprocessing as mp
@@ -8,15 +6,16 @@ import os
 import platform
 import sqlite3
 import time
+from builtins import filter, object, zip
 from datetime import datetime
 from glob import glob
 from itertools import groupby
 
 import blackfynn.log as log
-from blackfynn.extensions import require_extension, pandas as pd, numpy as np
+from blackfynn.extensions import numpy as np
+from blackfynn.extensions import pandas as pd
+from blackfynn.extensions import require_extension
 from blackfynn.models import DataPackage, TimeSeriesChannel
-
-# blackfynn-specific
 from blackfynn.utils import usecs_since_epoch, usecs_to_datetime
 
 from .cache_segment_pb2 import CacheSegment
