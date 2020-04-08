@@ -29,4 +29,4 @@ from .models import (
 )
 
 __title__ = "blackfynn"
-__version__ = "3.6.2"
+__version__ = "3.6.3"

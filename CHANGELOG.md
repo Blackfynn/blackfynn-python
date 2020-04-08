@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at <https://developer.blackfynn.io/python/>
 
+## 3.6.3
+
+### Added
+- `black` and `isort` code formatters to the project
+- An endpoint to batch create linked properties
+
 ## 3.6.2
 
 ### Changed
