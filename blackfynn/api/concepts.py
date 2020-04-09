@@ -648,8 +648,8 @@ class RecordsAPI(ModelsAPIBase):
                 dataset_id=dataset_id,
                 concept_id=concept_id,
                 instance_id=instance_id,
-                json=json,
-            )
+            ),
+            json=json,
         )
 
         results = resp["data"]
