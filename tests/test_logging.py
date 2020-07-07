@@ -3,7 +3,7 @@ import os
 
 
 def test_default_log_level():
-    import blackfynn.log as log
+    from blackfynn import log
 
     # default log level should be INFO
     base_log = log.get_logger("base_log")
@@ -11,7 +11,7 @@ def test_default_log_level():
 
 
 def test_log_level_based_on_env():
-    import blackfynn.log as log
+    from blackfynn import log
 
     # setting env var should change logging level
     os.environ["BLACKFYNN_LOG_LEVEL"] = "WARN"

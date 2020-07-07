@@ -13,7 +13,7 @@ from requests.exceptions import HTTPError
 from requests.packages.urllib3.util.retry import Retry
 
 # blackfynn
-import blackfynn.log as log
+from blackfynn import log
 from blackfynn.models import User
 
 

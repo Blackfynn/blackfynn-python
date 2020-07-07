@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import absolute_import, division, print_function
 from future.utils import string_types
 
@@ -16,7 +15,7 @@ import boto3
 from boto3.s3.transfer import S3Transfer
 from botocore.client import Config
 
-import blackfynn.log as log
+from blackfynn import log
 from blackfynn.api.agent import agent_upload, validate_agent_installation
 from blackfynn.api.base import APIBase
 from blackfynn.models import Collection, DataPackage, Dataset, TimeSeries

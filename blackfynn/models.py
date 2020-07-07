@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import absolute_import, division, print_function
 from future.utils import PY2, as_native_str, string_types
 
@@ -16,7 +15,7 @@ import pytz
 import requests
 from dateutil.parser import parse
 
-import blackfynn.log as log
+from blackfynn import log
 from blackfynn.extensions import numpy as np
 from blackfynn.extensions import pandas as pd
 from blackfynn.extensions import require_extension
@@ -509,7 +508,11 @@ class BaseDataNode(BaseNode):
         except:
             pass
 
-        item.owner_id = data.get("owner", data.get("ownerId", None))
+        item.owner_id = (
+            data.get("owner")
+            or data.get("ownerId",)
+            or data.get("content", {}).get("ownerId")  # For packages
+        )
 
         # parse, store parent (ID only)
         parent = data.get("parent", None)

@@ -1,11 +1,10 @@
 install:
-	pip install -e .
-	pip install -r requirements-test.txt -r requirements-format.txt
+	pip install --upgrade -e . -r requirements-test.txt -r requirements-format.txt
 
 format:
-	isort -rc .
+	isort .
 	black .
 
 lint:
-	@isort -rc --check-only .
+	@isort --check-only .
 	@black --check .

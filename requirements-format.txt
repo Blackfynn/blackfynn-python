@@ -1,2 +1,2 @@
 black
-isort
+isort>=5.0.0

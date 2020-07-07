@@ -11,7 +11,7 @@ from datetime import datetime
 from glob import glob
 from itertools import groupby
 
-import blackfynn.log as log
+from blackfynn import log
 from blackfynn.extensions import numpy as np
 from blackfynn.extensions import pandas as pd
 from blackfynn.extensions import require_extension

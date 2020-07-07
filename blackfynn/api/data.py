@@ -7,7 +7,7 @@ import math
 
 import requests
 
-import blackfynn.log as log
+from blackfynn import log
 from blackfynn.api.base import APIBase
 from blackfynn.extensions import numpy as np
 from blackfynn.extensions import pandas as pd
