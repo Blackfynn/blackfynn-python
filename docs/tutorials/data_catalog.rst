@@ -176,7 +176,7 @@ their corresponding collections.
     # add data to the collections
     #
     col1.upload('example_data/testData.nev',\
-                'example_data/testData.ns2', \)
+                'example_data/testData.ns2')
 
     col2.upload('example_data/T2.nii.gz',\
         'example_data/blackfynn.pdf',\
