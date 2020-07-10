@@ -237,7 +237,7 @@ def test_models(dataset):
 
     df_rs = new_relationship.get_all().as_dataframe()
 
-    p = DataPackage("test-csv", package_type="Tabular")
+    p = DataPackage("test-csv", package_type="CSV")
     dataset.add(p)
     dataset.update()
     assert p.exists

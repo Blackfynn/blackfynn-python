@@ -22,9 +22,6 @@ from blackfynn.models import (
     PublishInfo,
     StatusLogEntry,
     StatusLogResponse,
-    Tabular,
-    TabularSchema,
-    TabularSchemaColumn,
     TeamCollaborator,
     User,
     UserCollaborator,
@@ -321,100 +318,6 @@ class PackagesAPI(APIBase):
             return resp["url"]
         else:
             raise Exception("Unable to get URL for file ID = {}".format(file_id))
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Tabular
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-class TabularAPI(APIBase):
-    base_uri = "/tabular"
-    name = "tabular"
-
-    def _get_data_chunked(self, package, chunk_size, offset, order_by, order_direction):
-        path = self._uri("/{id}", id=self._get_id(package))
-
-        params = dict(limit=chunk_size, offset=offset, order_direction=order_direction)
-        if order_by is not None:
-            params["orderBy"] = order_by
-
-        return self._get(path, params=params)
-
-    @require_extension
-    def get_tabular_data_iter(
-        self, package, offset, order_by, order_direction, chunk_size=10000
-    ):
-        """
-        Return iterator that yields chunk_size data each call
-        """
-        if chunk_size > 10000:
-            raise ValueError("Chunk size must be less than 10000")
-
-        schema = self.get_table_schema(package)
-        column_names = {
-            x.name: x.display_name if x.display_name else x.name
-            for x in schema.column_schema
-        }
-        internal_columns = [x.name for x in schema.column_schema if x.internal]
-
-        while True:
-            resp = self._get_data_chunked(
-                package,
-                chunk_size=chunk_size,
-                offset=offset,
-                order_direction=order_direction,
-                order_by=order_by,
-            )
-            offset = offset + chunk_size
-
-            df = pd.DataFrame.from_records(resp["rows"], exclude=internal_columns)
-            df.columns = [column_names.get(c) for c in df.columns]
-
-            yield df
-
-            if len(df) < chunk_size:
-                break
-
-    @require_extension
-    def get_tabular_data(self, package, limit, offset, order_by, order_direction):
-        """
-        Get data for tabular package using iterator
-        """
-        tab_iter = self.get_tabular_data_iter(
-            package=package,
-            offset=offset,
-            order_by=order_by,
-            order_direction=order_direction,
-        )
-        df = pd.DataFrame()
-        for tmp_df in tab_iter:
-            df = df.append(tmp_df)
-        return df[0:limit]
-
-    def set_table_schema(self, package, tabular_schema):
-        """
-        Add a table schema to a tabular package.
-
-        tabular_schema: blackfynn.tabular.models.TabularSchema
-        """
-        id = self._get_id(package)
-        path = self._uri("/{id}/schema", id=id)
-        if isinstance(tabular_schema, TabularSchema):
-            body = {"schema": tabular_schema.as_dict()}
-        else:
-            body = {"schema": tabular_schema}
-
-        resp = self._post(path, json=body)
-        data = resp
-
-        return TabularSchema.from_dict(data)
-
-    def get_table_schema(self, package):
-        id = self._get_id(package)
-        path = self._uri("/{id}/schema", id=id)
-        resp = self._get(path)
-        return TabularSchema.from_dict(resp)
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

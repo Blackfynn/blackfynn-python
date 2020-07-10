@@ -34,13 +34,6 @@ Time Series
    TimeSeriesAnnotationLayer
    TimeSeriesAnnotation
 
-Tabular
-
-.. autosummary::
-   :nosignatures:
-
-   Tabular
-
 .. Concepts
 
 .. .. autosummary::
@@ -118,13 +111,6 @@ Timeseries
    :show-inheritance:
 
 .. autoclass:: TimeSeriesAnnotationLayer
-   :members:
-   :show-inheritance:
-
-Tabular
-^^^^^^^^^^^^
-
-.. autoclass:: Tabular
    :members:
    :show-inheritance:
 

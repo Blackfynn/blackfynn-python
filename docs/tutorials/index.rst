@@ -12,5 +12,4 @@ This section contains a series of tutorials that demonstrate the use of the Blac
    preparing
    data_catalog
    timeseries
-   tabular
    knowledge_graph

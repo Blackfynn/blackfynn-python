@@ -21,8 +21,6 @@ from .models import (
     Relationship,
     RelationshipSet,
     RelationshipType,
-    Tabular,
-    TabularSchema,
     TimeSeries,
     TimeSeriesAnnotation,
     TimeSeriesChannel,

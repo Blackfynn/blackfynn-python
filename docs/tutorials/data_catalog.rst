@@ -123,9 +123,9 @@ We can see that the dataset that we created, previously called
 ``New Dataset``, is now called ``BF Tutorial``. Note that while the name
 of the dataset has changed, its unique ID remains the same.
 
-As an excercise, we will upload all of the non-tabular data that is
+As an excercise, we will upload some of the data that is
 available in the test set to a ``Collection`` called
-"original collection 1" and all of the available tabular data to another
+"original collection 1" and some other data to another
 collection called "original collection 2". We will then move all of the
 content in these collections to a third collection called
 "final collection". These collections will be created inside a
@@ -175,13 +175,10 @@ their corresponding collections.
 
     # add data to the collections
     #
-    col1.upload('example_data/table1.csv',\
-                'example_data/table2.csv',\
-                'example_data/table3.csv')
+    col1.upload('example_data/testData.nev',\
+                'example_data/testData.ns2', \)
 
-    col2.upload('example_data/testData.nev',\
-                'example_data/testData.ns2', \
-                'example_data/T2.nii.gz',\
+    col2.upload('example_data/T2.nii.gz',\
         'example_data/blackfynn.pdf',\
         'example_data/small_region.svs')
 
@@ -214,11 +211,8 @@ collections. We can see all of the content of the dataset by using the
 
     <Dataset name='Practice Dataset' id='N:dataset:aaaace74-b27a-4069-8b0b-5a102c4dcecb'>
       <Collection name='original collection 1' id='N:collection:243062ce-fdbf-4331-8c21-bc2d09b0089e'>
-        <Tabular name='table1' id='N:package:233776aa-a8c0-4d81-9514-8d5ef6a402f6'>
-        <Tabular name='table2' id='N:package:e6be4926-0aaa-4997-8634-5a00a7a92583'>
-        <Tabular name='table3' id='N:package:6bdd79d3-1de2-415d-a2b4-dce03c6ba895'>
-      <Collection name='original collection 2' id='N:collection:3a242008-5875-4b38-b651-ed6ffdca0e80'>
         <DataPackage name='small_region' id='N:package:25eb1f60-7593-4cc7-9bff-aab3b2859f32'>
+      <Collection name='original collection 2' id='N:collection:3a242008-5875-4b38-b651-ed6ffdca0e80'>
         <DataPackage name='T2' id='N:package:cd6784b6-ba5d-4cc5-8a86-93f279b2832b'>
         <DataPackage name='blackfynn' id='N:package:7548dbd9-0886-4ec5-8262-e7ab6e8f212f'>
         <TimeSeries name='testData' id='N:package:5c7fd669-4333-48c8-ac5a-9f549a3efc4d'>
@@ -256,9 +250,6 @@ Deleting and moving items
 
     <Dataset name='Practice Dataset' id='N:dataset:aaaace74-b27a-4069-8b0b-5a102c4dcecb'>
       <Collection name='final collection' id='N:collection:0975ef4b-c851-417e-bc6f-c2f81a78a627'>
-        <Tabular name='table1' id='N:package:233776aa-a8c0-4d81-9514-8d5ef6a402f6'>
-        <Tabular name='table2' id='N:package:e6be4926-0aaa-4997-8634-5a00a7a92583'>
-        <Tabular name='table3' id='N:package:6bdd79d3-1de2-415d-a2b4-dce03c6ba895'>
         <DataPackage name='small_region' id='N:package:25eb1f60-7593-4cc7-9bff-aab3b2859f32'>
         <DataPackage name='T2' id='N:package:cd6784b6-ba5d-4cc5-8a86-93f279b2832b'>
         <DataPackage name='blackfynn' id='N:package:7548dbd9-0886-4ec5-8262-e7ab6e8f212f'>
