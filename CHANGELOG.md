@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at <https://developer.blackfynn.io/python/>
 
+## 3.6.4
+
+### Added
+- Optional global headers to attach to every request
+- Deprecate `default` field  on model properties. The `required` property should be used instead.
+
+### Fixed
+- `ownerId` property for packages
+- Model creation now raises an exception when property creation fails and does not leave the model in an indeterminate state with no properties
+
 ## 3.6.3
 
 ### Added

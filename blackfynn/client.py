@@ -4,7 +4,7 @@
 from __future__ import absolute_import, division, print_function
 from future.utils import as_native_str
 
-from builtins import dict, object
+from builtins import object
 
 from . import log
 from .api.concepts import (
@@ -33,6 +33,8 @@ class Blackfynn(object):
         profile (str, optional): Preferred profile to use
         api_token (str, optional): Preferred api token to use
         api_secret (str, optional): Preferred api secret to use
+        jwt (str, optional): A JWT to use for authentication
+        headers (dict, optional): A set of global headers to attach to every request
         model_service_host (str, optional): Preferred model service host to use
         host (str, optional): Preferred host to use
         env_override (bool, optional): Should environment variables override settings
@@ -82,6 +84,7 @@ class Blackfynn(object):
         api_token=None,
         api_secret=None,
         jwt=None,
+        headers=None,
         host=None,
         model_service_host=None,
         env_override=True,
@@ -98,9 +101,10 @@ class Blackfynn(object):
                     "api_secret": api_secret,
                     "api_host": host,
                     "jwt": jwt,
+                    "headers": headers,
                     "model_service_host": model_service_host,
                 }.items()
-                if v != None
+                if v is not None
             }
         )
         self.settings = Settings(profile, overrides, env_override)

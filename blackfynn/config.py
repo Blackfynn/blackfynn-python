@@ -160,6 +160,8 @@ DEFAULTS = {
     "api_secret": None,
     # blackfynn JWT
     "jwt": None,
+    # global headers
+    "headers": None,
     # all requests
     "max_request_time": 120,  # two minutes
     "max_request_timeout_retries": 2,

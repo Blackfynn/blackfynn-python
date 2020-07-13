@@ -3,6 +3,7 @@ import pytest
 from blackfynn.models import ModelProperty, ModelTemplate
 
 
+@pytest.mark.skip(reason="Model schema service is soon to be deprecated")
 def test_templates(client, dataset):
 
     template_1 = ModelTemplate(

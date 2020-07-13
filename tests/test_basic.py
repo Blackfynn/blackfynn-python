@@ -288,3 +288,16 @@ def test_exception_raise():
     with pytest.raises(Exception) as excinfo:
         bf._api._call("get", "/datasets/plop")
     assert "plop not found" in str(excinfo.value)
+
+
+def test_client_global_headers():
+    global_headers = {
+        "X-Custom-Header1": "Custom Value",
+        "X-Custom-Header2": "Custom Value2",
+    }
+    bf = Blackfynn(headers=global_headers)
+    assert bf.settings.headers == global_headers
+
+    for header, header_value in global_headers.items():
+        assert header in bf._api._session.headers
+        assert bf._api._session.headers[header] == header_value
