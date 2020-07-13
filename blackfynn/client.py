@@ -15,7 +15,7 @@ from .api.concepts import (
     RecordsAPI,
 )
 from .api.core import CoreAPI, OrganizationsAPI, SearchAPI, SecurityAPI
-from .api.data import DataAPI, DatasetsAPI, FilesAPI, PackagesAPI, TabularAPI
+from .api.data import DataAPI, DatasetsAPI, FilesAPI, PackagesAPI
 from .api.timeseries import TimeSeriesAPI
 from .api.transfers import IOAPI
 from .api.user import UserAPI
@@ -137,7 +137,6 @@ class Blackfynn(object):
             DataAPI,
             PackagesAPI,
             TimeSeriesAPI,
-            TabularAPI,
             SecurityAPI,
             SearchAPI,
             IOAPI,
