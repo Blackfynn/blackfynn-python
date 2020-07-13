@@ -2709,6 +2709,20 @@ class ModelPropertyEnumType(ModelPropertyType):
 
 
 class BaseModelProperty(object):
+    """
+    Fallback values for property fields are resolved as follows:
+
+    (1) A property is `required` if it is the title of the model
+
+    (2) A property is `default` if it is `required`. `default` is deprecated and
+    `required` is now the source of truth.
+
+    (3) If the `display_name` for a property is not provided use `name` instead
+
+    The default values of both `required` and `default` can be on be overridden
+    by passing in explicit
+    """
+
     def __init__(
         self,
         name,
@@ -2716,10 +2730,10 @@ class BaseModelProperty(object):
         data_type=str,
         id=None,
         locked=False,
-        default=True,
+        default=None,
         title=False,
         description="",
-        required=False,
+        required=None,
     ):
         assert (
             " " not in name
@@ -2727,9 +2741,18 @@ class BaseModelProperty(object):
             name.replace(" ", "_"), name.replace(" ", "-")
         )
 
+        if required is None:
+            required = title
+
+        if default is None:
+            default = required
+
+        if display_name is None:
+            display_name = name
+
         self.id = id
         self.name = name
-        self.display_name = display_name or name
+        self.display_name = display_name
         self.type = data_type  # passed through @type.setter
         self.locked = locked
         self.default = default
@@ -2767,13 +2790,13 @@ class BaseModelProperty(object):
 
     @classmethod
     def from_dict(cls, data):
-        display_name = data.get("displayName", data.get("display_name", dict()))
+        display_name = data.get("displayName", data.get("display_name"))
         data_type = data.get("data_type", data.get("dataType"))
         locked = data.get("locked", False)
-        default = data.get("default", True)
+        default = data.get("default")
         title = data.get("title", data.get("conceptTitle", False))
         id = data.get("id", None)
-        required = data.get("required", False)
+        required = data.get("required")
         description = data.get("description", "")
 
         return cls(

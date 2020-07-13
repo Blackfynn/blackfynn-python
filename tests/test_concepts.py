@@ -349,6 +349,43 @@ def test_simple_model_properties(dataset):
     assert updated_model_4.get_property("name").required == True
 
 
+def test_model_property_default_field_inherits_from_required_field(dataset):
+    """
+    Unless explictly set, the `default` field on a property takes the value of
+    the `required` field.
+    """
+    model = dataset.create_model(
+        "Default_properties_model",
+        description="",
+        schema=[
+            ModelProperty("name", data_type="string", title=True),
+            ModelProperty("required", data_type="string", required=True),
+            ModelProperty("not_required", data_type="string", required=False),
+        ],
+    )
+
+    model = dataset.get_model(model)
+    assert model.get_property("required").required is True
+    assert model.get_property("required").default is True
+
+    assert model.get_property("not_required").required is False
+    assert model.get_property("not_required").default is False
+
+    model.create_record({"name": "Record #1", "required": "yes"})
+
+
+def test_model_title_is_a_required_property_by_default(dataset):
+    model = dataset.create_model(
+        "Concept_title_model",
+        description="",
+        schema=[ModelProperty("name", data_type="string", title=True),],
+    )
+
+    model = dataset.get_model(model)
+    assert model.get_property("name").title is True
+    assert model.get_property("name").required is True
+
+
 def test_complex_model_properties(dataset):
     model_with_complex_props = dataset.create_model(
         "Complex_Props",
