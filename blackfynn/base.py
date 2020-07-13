@@ -70,6 +70,7 @@ class ClientSession(object):
         self._api_token = settings.api_token
         self._api_secret = settings.api_secret
         self._jwt = settings.jwt
+        self._headers = settings.headers
         self._model_service_host = settings.model_service_host
         self._logger = log.get_logger("blackfynn.base.ClientSession")
 
@@ -152,6 +153,10 @@ class ClientSession(object):
         if self._session is None:
             self._session = Session()
             self._set_auth(self.token)
+
+            # Set global headers
+            if self._headers:
+                self._session.headers.update(self._headers)
 
             # Enable retries via urllib
             adapter = HTTPAdapter(
