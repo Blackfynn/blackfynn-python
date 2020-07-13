@@ -219,15 +219,17 @@ class ModelsAPI(ModelsAPIBase):
             try:
                 r["schema"] = self.update_properties(dataset, concept)
             except requests.exceptions.HTTPError as e:
-                if e.response.status_code == 400:
-                    self._logger.error(
-                        "Model was successfully created, but properties were "
-                        "rejected with the following error: {}".format(
-                            str(e.response.text.split("\n")[0])
-                        )
+
+                # If properties can not be created, roll back model creation so
+                # the user can try again.
+                self.delete(dataset, concept)
+
+                raise Exception(
+                    "Could not create model properties: {}".format(
+                        e.response.json().get("detail", e.response.json())
                     )
-                else:
-                    raise
+                )
+
         return Model.from_dict(r, api=self.session)
 
     def create_linked_property(self, dataset, concept, prop):

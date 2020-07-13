@@ -46,16 +46,19 @@ def test_model_type_from_dict(json, data_type, format, unit):
     assert decoded.unit == unit
 
 
-def test_model_with_invalid_properties(dataset):
+def test_rollback_model_creation_with_invalid_properties(dataset):
+    model_name = "New_Model_{}".format(current_ts())
     invalid_schema = [("an_integer", int, "An Integer")]
-    new_model = dataset.create_model(
-        "New_Model_{}".format(current_ts()),
-        "A New Model",
-        "a new model",
-        invalid_schema,
-    )
 
-    assert not new_model.schema
+    # Creating the model succeeds, but then creating properties fails
+    with pytest.raises(Exception) as e:
+        dataset.create_model(
+            model_name, schema=invalid_schema,
+        )
+    assert "Could not create model properties" in str(e.value)
+
+    # Model creation is rolled back
+    assert model_name not in dataset.models()
 
 
 def test_date_formatting():
