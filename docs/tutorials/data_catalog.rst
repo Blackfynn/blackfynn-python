@@ -207,7 +207,7 @@ collections. We can see all of the content of the dataset by using the
 
 
 .. code-block:: console
-   :emphasize-lines: 10
+   :emphasize-lines: 8
 
     <Dataset name='Practice Dataset' id='N:dataset:aaaace74-b27a-4069-8b0b-5a102c4dcecb'>
       <Collection name='original collection 1' id='N:collection:243062ce-fdbf-4331-8c21-bc2d09b0089e'>
