@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at <https://developer.blackfynn.io/python/>
 
+## 4.0.0
+
+### Breaking Changes
+- Removed tabular support
+
 ## 3.6.4
 
 ### Added
