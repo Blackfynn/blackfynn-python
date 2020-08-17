@@ -158,8 +158,7 @@ def test_timeseries_annotations(client, timeseries):
 
     layers = timeseries.layers
     assert len(layers) == 2
-    assert layers[0].name == "test_layer"
-    assert layers[1].name == "test_layer2"
+    assert set([layers[0].name, layers[1].name]) == set(["test_layer", "test_layer2"])
 
     # Create channels
     ch = TimeSeriesChannel(

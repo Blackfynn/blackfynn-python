@@ -6,11 +6,15 @@ from blackfynn.models import LinkedModelProperty, ModelProperty
 from tests.utils import create_test_dataset
 
 
+def make_id():
+    return str(uuid4()).replace("-", "_")
+
+
 ### Testing linked properties locally:
 def test_make_linked_property(dataset):
     # make a new model
     model = dataset.create_model(
-        "my_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "my_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
 
     # create a linked property linking to that model,
@@ -48,10 +52,10 @@ def test_make_linked_property(dataset):
 def test_add_linked_property(dataset):
     # Create two models and link one to the other
     source = dataset.create_model(
-        "source_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "source_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     target = dataset.create_model(
-        "target_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "target_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     source.add_linked_property("link", target, "my linked property")
 
@@ -74,10 +78,10 @@ def test_add_linked_property(dataset):
 def test_add_linked_property_bulk(dataset):
     # Link one model to three others
     source = dataset.create_model(
-        "source_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "source_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     target = dataset.create_model(
-        "target_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "target_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     link1 = LinkedModelProperty("link1", target, "bulk-added")
     link2 = LinkedModelProperty("link2", target, "bulk-added")
@@ -97,10 +101,10 @@ def test_add_linked_property_bulk(dataset):
 def test_edit_linked_property(dataset):
     # make a model and add a linked property
     source = dataset.create_model(
-        "source_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "source_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     target = dataset.create_model(
-        "target_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "target_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     link = source.add_linked_property("link", target, "my linked property")
 
@@ -118,10 +122,10 @@ def test_edit_linked_property(dataset):
 def test_delete_linked_property(dataset):
     # make a model and add a linked property
     source = dataset.create_model(
-        "source_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "source_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     target = dataset.create_model(
-        "target_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "target_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     source.add_linked_property("link", target, "my linked property")
 
@@ -135,10 +139,10 @@ def test_delete_linked_property(dataset):
 def test_retrieve_linked_properties(dataset):
     # make a model and add a linked property
     source = dataset.create_model(
-        "source_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "source_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     target = dataset.create_model(
-        "target_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "target_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     source.add_linked_property("link", target, "my linked property")
 
@@ -150,10 +154,10 @@ def test_retrieve_linked_properties(dataset):
 def test_add_link(dataset):
     # make a model and add a linked property
     source = dataset.create_model(
-        "source_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "source_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     target = dataset.create_model(
-        "target_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "target_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     prop = source.add_linked_property("link", target, "my linked property")
 
@@ -174,10 +178,10 @@ def test_add_link(dataset):
 def test_get_link(dataset):
     # make a model and add a linked property
     source = dataset.create_model(
-        "source_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "source_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     target = dataset.create_model(
-        "target_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "target_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     prop = source.add_linked_property("link", target, "my linked property")
 
@@ -195,10 +199,10 @@ def test_get_link(dataset):
 def test_remove_link(dataset):
     # make a model and add a linked property
     source = dataset.create_model(
-        "source_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "source_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     target = dataset.create_model(
-        "target_model_{}".format(uuid4()), schema=[ModelProperty("name", title=True)]
+        "target_model_{}".format(make_id()), schema=[ModelProperty("name", title=True)]
     )
     prop = source.add_linked_property("link", target, "my linked property")
 

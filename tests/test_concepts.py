@@ -148,10 +148,16 @@ def test_models(dataset):
             "a_datetime": datetime.datetime.now(),
         }
     )
-    nc_four = new_model.create_record({"a_datetime": datetime.datetime.now()})
+    nc_four = new_model.create_record(
+        {"an_integer": 9292, "a_datetime": datetime.datetime.now()}
+    )
 
-    nc_delete_one = new_model.create_record({"a_datetime": datetime.datetime.now()})
-    nc_delete_two = new_model.create_record({"a_datetime": datetime.datetime.now()})
+    nc_delete_one = new_model.create_record(
+        {"an_integer": 28, "a_datetime": datetime.datetime.now()}
+    )
+    nc_delete_two = new_model.create_record(
+        {"an_integer": 300, "a_datetime": datetime.datetime.now()}
+    )
 
     with pytest.raises(Exception):
         new_model.create_record()
@@ -174,11 +180,13 @@ def test_models(dataset):
     with pytest.raises(Exception):
         nc_four.set("an_integer", datetime.datetime.now())
 
-    assert nc_four.get("an_integer") == None
+    assert nc_four.get("an_integer") == 9292
     nc_four.set("an_integer", 10)
     assert nc_four.get("an_integer") == 10
 
-    nc_delete_three = new_model.create_record({"a_string": "delete me"})
+    nc_delete_three = new_model.create_record(
+        {"an_integer": 684, "a_string": "delete me"}
+    )
     assert len(new_model.get_all()) == len(new_models) + 1
     nc_delete_three.delete()
     assert len(new_model.get_all()) == len(new_models)
