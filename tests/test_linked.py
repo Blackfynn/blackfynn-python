@@ -7,7 +7,7 @@ from tests.utils import create_test_dataset
 
 
 def make_id():
-    return str(uuid4()).replace('-', '_')
+    return str(uuid4()).replace("-", "_")
 
 
 ### Testing linked properties locally:
