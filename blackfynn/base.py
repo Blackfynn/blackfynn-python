@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
+from builtins import dict, object
 from future.utils import raise_from
 
 import base64
 import json
-from builtins import dict, object
 
 import requests
 from requests import Session
@@ -83,8 +83,7 @@ class ClientSession(object):
         self.settings = settings
 
     def authenticate(self, organization=None):
-        """
-        """
+        """"""
         if self._jwt is None:
             self._authenticate_with_session(organization=organization)
         else:

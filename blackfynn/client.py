@@ -2,9 +2,8 @@
 
 # blackfynn-specific
 from __future__ import absolute_import, division, print_function
-from future.utils import as_native_str
-
 from builtins import object
+from future.utils import as_native_str
 
 from . import log
 from .api.concepts import (

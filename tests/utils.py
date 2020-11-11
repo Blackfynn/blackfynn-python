@@ -27,8 +27,8 @@ def get_test_client(profile=None, api_token=None, api_secret=None, **overrides):
 
 
 def create_test_dataset(bf_client):
-    """ Utility function to generate a dataset for testing. It is up to the
-        caller to ensure the dataset is cleaned up
+    """Utility function to generate a dataset for testing. It is up to the
+    caller to ensure the dataset is cleaned up
     """
     ds = bf_client.create_dataset("test_dataset_{}".format(uuid4()))
     ds_id = ds.id

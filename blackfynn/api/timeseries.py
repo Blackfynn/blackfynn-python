@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function
+from builtins import dict, object, range, zip
 from future.utils import as_native_str, integer_types, string_types
 
 import datetime
 import itertools
 import math
 import re
-from builtins import dict, object, range, zip
 from concurrent.futures import ThreadPoolExecutor
 from itertools import count, islice
 

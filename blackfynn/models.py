@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
+from builtins import object, zip
 from future.utils import PY2, as_native_str, string_types
 
 import datetime
@@ -7,7 +8,6 @@ import io
 import os
 import re
 import sys
-from builtins import object, zip
 from uuid import uuid4
 
 import dateutil
@@ -508,7 +508,9 @@ class BaseDataNode(BaseNode):
 
         item.owner_id = (
             data.get("owner")
-            or data.get("ownerId",)
+            or data.get(
+                "ownerId",
+            )
             or data.get("content", {}).get("ownerId")  # For packages
         )
 
@@ -1003,8 +1005,10 @@ class File(BaseDataNode):
 
     @as_native_str()
     def __repr__(self):
-        return u"<File name='{}' type='{}' key='{}' bucket='{}' size='{}' id='{}'>".format(
-            self.name, self.type, self.s3_key, self.s3_bucket, self.size, self.id
+        return (
+            u"<File name='{}' type='{}' key='{}' bucket='{}' size='{}' id='{}'>".format(
+                self.name, self.type, self.s3_key, self.s3_bucket, self.size, self.id
+            )
         )
 
 
@@ -1990,7 +1994,7 @@ class Dataset(BaseCollection):
             raise AttributeError("Dataset.tags should be a list of strings.")
 
     def get_topology(self):
-        """ Returns the set of Models and Relationships defined for the dataset
+        """Returns the set of Models and Relationships defined for the dataset
 
         Returns:
             dict: Keys are either ``models`` or ``relationships``. Values are
@@ -2071,7 +2075,7 @@ class Dataset(BaseCollection):
         return self._api.concepts.relationships.get(self.id, name_or_id)
 
     def get_connected_models(self, name_or_id):
-        """ Retrieve all models connected to the given model
+        """Retrieve all models connected to the given model
 
             Connected is defined as model that can be reached by following
             outgoing relationships starting at the current model
@@ -3633,7 +3637,7 @@ class Model(BaseModelNode):
         return self._api.concepts.query.new(self, self.dataset_id)
 
     def get_connected(self):
-        """ Retrieves all connected models
+        """Retrieves all connected models
 
             Connected is defined as model that can be reached by following
             outgoing relationships starting at the current model

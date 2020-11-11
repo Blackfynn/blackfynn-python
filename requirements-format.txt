@@ -1,2 +1,2 @@
-black
-isort>=5.0.0
+black==20.8b1
+isort>=5.0.0,<6.0.0

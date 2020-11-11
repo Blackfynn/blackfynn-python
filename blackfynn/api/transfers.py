@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
+from builtins import dict, object
 from future.utils import string_types
 
 import io
@@ -8,7 +9,6 @@ import sys
 import threading
 import time
 import uuid
-from builtins import dict, object
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import boto3
@@ -359,7 +359,9 @@ class IOAPI(APIBase):
         return group_results
 
     def get_preview(self, files, append):
-        params = dict(append=append,)
+        params = dict(
+            append=append,
+        )
 
         payload = {
             "files": [
@@ -373,7 +375,9 @@ class IOAPI(APIBase):
         }
 
         response = self._post(
-            endpoint=self._uri("/files/upload/preview"), params=params, json=payload,
+            endpoint=self._uri("/files/upload/preview"),
+            params=params,
+            json=payload,
         )
 
         import_id_map = dict()
@@ -390,7 +394,11 @@ class IOAPI(APIBase):
     def set_upload_complete(
         self, import_id, dataset_id, destination_id, append=False, targets=None
     ):
-        params = dict(append=append, datasetId=dataset_id, importId=import_id,)
+        params = dict(
+            append=append,
+            datasetId=dataset_id,
+            importId=import_id,
+        )
         if destination_id is not None:
             params["destinationId"] = destination_id
 

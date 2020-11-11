@@ -42,10 +42,10 @@ https://developer.blackfynn.io/agent
 """
 
 from __future__ import absolute_import, print_function
+from builtins import input
 
 import io
 import os
-from builtins import input
 
 from docopt import docopt
 

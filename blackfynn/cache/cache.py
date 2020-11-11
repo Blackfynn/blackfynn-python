@@ -1,4 +1,5 @@
 from __future__ import absolute_import, division, print_function
+from builtins import filter, object, zip
 
 import io
 import multiprocessing as mp
@@ -6,7 +7,6 @@ import os
 import platform
 import sqlite3
 import time
-from builtins import filter, object, zip
 from datetime import datetime
 from glob import glob
 from itertools import groupby

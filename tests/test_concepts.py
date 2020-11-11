@@ -53,7 +53,8 @@ def test_rollback_model_creation_with_invalid_properties(dataset):
     # Creating the model succeeds, but then creating properties fails
     with pytest.raises(Exception) as e:
         dataset.create_model(
-            model_name, schema=invalid_schema,
+            model_name,
+            schema=invalid_schema,
         )
     assert "Could not create model properties" in str(e.value)
 
@@ -389,7 +390,9 @@ def test_model_title_is_a_required_property_by_default(dataset):
     model = dataset.create_model(
         "Concept_title_model",
         description="",
-        schema=[ModelProperty("name", data_type="string", title=True),],
+        schema=[
+            ModelProperty("name", data_type="string", title=True),
+        ],
     )
 
     model = dataset.get_model(model)
@@ -581,8 +584,8 @@ Graph = namedtuple(
 @pytest.fixture(scope="module")
 def simple_graph(client):
     """
-        Creates a small test graph in an independent dataset to de-couple
-        from other tests
+    Creates a small test graph in an independent dataset to de-couple
+    from other tests
     """
     test_dataset = create_test_dataset(client)
     model_1 = test_dataset.create_model(
