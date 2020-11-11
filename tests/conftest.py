@@ -18,17 +18,6 @@ def client():
 
 
 @pytest.fixture(scope="session")
-def client2():
-    api_token = os.environ.get("BLACKFYNN_API_TOKEN2")
-    api_secret = os.environ.get("BLACKFYNN_API_SECRET2")
-    assert api_token != "", "Must define BLACKFYNN_API_TOKEN2"
-    assert api_secret != "", "Must define BLACKFYNN_API_SECRET2"
-
-    bf = get_test_client(api_token=api_token, api_secret=api_secret)
-    return bf
-
-
-@pytest.fixture(scope="session")
 def session_id():
     return "{}-{}".format(str(datetime.now()), str(uuid4())[:4])
 
@@ -54,8 +43,3 @@ def dataset(client):
     assert ds_id not in all_dataset_ids
     assert not ds.exists
     assert not hasattr(ds, "parent")
-
-
-@pytest.fixture(scope="session")
-def test_organization(client):
-    return [o for o in client.organizations() if o.name == "Blackfynn"][0]

@@ -87,7 +87,7 @@ class ClientSession(object):
         if self._jwt is None:
             self._authenticate_with_session(organization=organization)
         else:
-            self._authenticate_with_jwt(organization=organization)
+            self._authenticate_with_jwt()
 
     def _authenticate_with_session(self, organization=None):
         """
@@ -110,7 +110,7 @@ class ClientSession(object):
 
         self._set_org_context(organization)
 
-    def _authenticate_with_jwt(self, organization=None):
+    def _authenticate_with_jwt(self):
         """
         Use a JWT to make all subsequent requests to API.
         """
@@ -139,10 +139,6 @@ class ClientSession(object):
 
     def _set_auth(self, session_token):
         self._session.headers["Authorization"] = "Bearer {}".format(session_token)
-        # If the JWT is present, we need to skip the `X-SESSION-ID` header
-        # as it will cause the JWT to be interpreted as a regular session token.
-        if self._jwt is None:
-            self._session.headers["X-SESSION-ID"] = session_token
 
     @property
     def session(self):
