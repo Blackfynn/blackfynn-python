@@ -170,28 +170,6 @@ class OrganizationsAPI(APIBase):
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Security
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-class SecurityAPI(APIBase):
-    """
-    Interface for interacting with Blackfynn's security model
-    """
-
-    base_uri = "/security"
-    name = "security"
-
-    def get_upload_credentials(self, dataset_id):
-        """
-        Get temporary credentials for a user's folder in the s3 bucket
-        """
-        return self._get(
-            self._uri("/user/credentials/upload/{dataset_id}", dataset_id=dataset_id)
-        )
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Search
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

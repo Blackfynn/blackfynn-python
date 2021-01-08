@@ -48,18 +48,12 @@ def test_get_by_filename(dataset, upload_args, n_files):
     """
     dataset.upload(*upload_args)
     dataset.update()
-    for i in range(5):
-        pp = dataset.get_items_by_name("test-78f3ea50-b")
-        if pp[0].state == "READY":
-            break
-        else:
-            time.sleep(0.5)
-    packages = dataset.get_packages_by_filename("test-78f3ea50-b")
+    packages = [p for p in dataset.items if p.name == "test-78f3ea50-b"]
     assert len(packages) == 1
     assert packages[0].name == "test-78f3ea50-b"
     files = packages[0].files
     assert len(files) == 1
-    assert files[0].name == "test-78f3ea50-b"
+    assert files[0].name == "test-78f3ea50-b.txt"
 
 
 @pytest.mark.parametrize(
@@ -134,55 +128,6 @@ def test_upload_to_dataset(dataset, upload_args, n_files):
     dataset.upload(*upload_args)
     dataset.update()
     assert len(dataset.items) == c + n_files
-
-
-@pytest.mark.parametrize(
-    "append_args,n_files",
-    [
-        ([FILE1], 1),  # Single file
-        ([FILE1, FILE2], 2),  # Multiple files, separate arguments
-        ([[FILE1, FILE2]], 2),  # Multiple files, single argument list
-    ],
-)
-def test_append_legacy(dataset, append_args, n_files):
-    # TimeSeries package to append into...
-    pkg = TimeSeries("Rando Timeseries")
-    dataset.add(pkg)
-
-    resp = pkg.append_files(*append_args, use_agent=False)
-    assert len(resp) == n_files
-
-    for r in resp:
-        manifest = r[0]["manifest"]
-        assert manifest["content"] is not None
-        assert manifest["type"] == "append"
-
-
-@pytest.mark.parametrize(
-    "upload_args,n_files",
-    [
-        ([FILE1], 1),  # Single file
-        ([FILE1, FILE2], 2),  # Multiple files, separate arguments
-        ([[FILE1, FILE2]], 2),  # Multiple files, single argument list
-    ],
-)
-def test_upload_legacy(dataset, upload_args, n_files):
-    """
-    Note: ETL will fail since destination will likely be removed
-          before being processed.
-    """
-    resp = dataset.upload(*upload_args, use_agent=False)
-    assert len(resp) == n_files
-
-    for r in resp:
-        manifest = r[0]["manifest"]
-        assert manifest["content"] is not None
-        assert manifest["type"] == "upload"
-
-
-def test_cannot_upload_directory_using_s3(dataset):
-    with pytest.raises(Exception):
-        dataset.upload(FLAT_DIR, use_agent=False)
 
 
 @pytest.mark.agent

@@ -7,7 +7,7 @@ services:
 
 env:
   global:
-    - AGENT_VERSION="0.2.6"
+    - AGENT_VERSION="0.2.9"
 
 install:
   # Install Blackfynn CLI agent
