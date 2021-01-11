@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Documentation at <https://developer.blackfynn.io/python/>
 
+## 5.0.0
+
+### Breaking Changes
+- The Blackfynn agent is now required for uploading files. The deprecated legacy uploading mode has now been removed and the `use_agent=` argument will be ignored.
+
 ## 4.0.1
 
 ### Fixed
