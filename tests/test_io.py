@@ -25,15 +25,6 @@ NESTED_DIR = _resource_path("nested_dir")
 INNER_DIR = "inner_dir"
 
 
-def test_upload_legacy_to_dataset(dataset):
-    n = len(dataset.items)
-    dataset.upload(FILE1, display_progress=True, use_agent=False)
-    dataset.update()
-
-    # Check that we've added an item to the dataset root
-    assert n + 1 == len(dataset.items)
-
-
 @pytest.mark.agent
 @pytest.mark.parametrize(
     "upload_args,n_files",
@@ -42,18 +33,20 @@ def test_upload_legacy_to_dataset(dataset):
     ],
 )  # Single file
 def test_get_by_filename(dataset, upload_args, n_files):
-    """
-    Note: ETL will fail since destination will likely be removed
-          before being processed.
-    """
+
     dataset.upload(*upload_args)
     dataset.update()
-    packages = [p for p in dataset.items if p.name == "test-78f3ea50-b"]
+
+    for i in range(10):
+        pp = dataset.get_items_by_name("test-78f3ea50-b.txt")
+        if len(pp) > 0 and pp[0].state == "READY":
+            break
+        else:
+            time.sleep(0.5)
+
+    packages = dataset.get_packages_by_filename("test-78f3ea50-b.txt")
     assert len(packages) == 1
-    assert packages[0].name == "test-78f3ea50-b"
-    files = packages[0].files
-    assert len(files) == 1
-    assert files[0].name == "test-78f3ea50-b.txt"
+    assert packages[0].name == "test-78f3ea50-b.txt"
 
 
 @pytest.mark.parametrize(
