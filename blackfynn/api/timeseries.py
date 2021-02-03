@@ -13,7 +13,6 @@ from itertools import count, islice
 
 import requests
 
-# blackfynn
 from blackfynn.api.base import APIBase
 from blackfynn.cache import get_cache
 from blackfynn.extensions import numpy as np

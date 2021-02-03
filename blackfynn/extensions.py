@@ -27,7 +27,7 @@ def require_extension(f):
     def wrapper(*args, **kwargs):
         if pandas is None or numpy is None:
             raise MissingDependency(
-                """This command require additional dependencies. To install, run:
+                """This command requires additional dependencies. To install, run:
 
 pip install blackfynn[data]
 
