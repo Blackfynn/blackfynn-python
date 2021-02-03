@@ -4,7 +4,7 @@ WORKDIR app
 
 # Install Agent:
 ENV AGENT_VERSION="0.2.9"
-RUN apt-get update && apt-get install sudo
+RUN apt-get update && apt-get install sudo multiarch-support
 
 # Agent is compiled against libssl 1.0.0. This manual install should no longer
 # be needed once the Pennsieve agent is built - Pennsieve runs on ubuntu-latest
