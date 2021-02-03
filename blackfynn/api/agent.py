@@ -149,7 +149,7 @@ def check_port(port):
 
 
 def socket_address(port):
-    return "ws://localhost:{}".format(port)
+    return "ws://0.0.0.0:{}".format(port)
 
 
 def create_agent_socket(port):
